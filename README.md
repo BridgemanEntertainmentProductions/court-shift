@@ -15,7 +15,9 @@ Made for **GitHub Game Off 2026** (theme: **SHIFT**) by [Bridgeman Entertainment
 
 ## The game
 
-One case. Three lanes. Hidden moves. You argue a real-feeling Swedish criminal trial against the computer, card by card.
+One case. Three lanes. Hidden moves. You argue a criminal trial against the computer, card by card.
+
+**Built on the Swedish justice system:** no jury, a professional judge with three lay judges, the prosecutor must prove every element of the crime beyond reasonable doubt, the case is called over the loudspeaker (nobody shouts "All rise!") and the judgment is written out the Swedish way.
 
 * **Three lanes = three elements of the crime** (the act, the person, the intent). The prosecution must win **all three**. The defense only needs **one**.
 * **Court time.** Round 1 gives you 1 minute, round 2 two minutes and so on. Cards cost minutes.
@@ -50,6 +52,10 @@ node src/sim.js       # balance simulation: 3000 AI-vs-AI trials
 | `src/notes.js` | Short notes on Swedish criminal procedure |
 | `shared/` | Fonts, splash and audio shared with *Arthur C. Bara's Marvelous Mysteries* |
 | `assets/` | Portraits and card art |
+
+## Embed on a WordPress site
+
+`wordpress/court-shift-box.zip` is a tiny WordPress plugin that adds a small "Play Court Shift" box to every page and opens the game in an overlay. Shortcode `[court_shift]` adds an inline card.
 
 ## AI disclosure
 
