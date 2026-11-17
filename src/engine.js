@@ -112,7 +112,8 @@ function sustain(g,s,x){x.struck=true;g.stats[seatOf(g,s)].obj++}
 function aiObject(g,s){if(!hasKw(g,s,"obj"))return null;const t=objTargets(g,s).sort((a,b)=>b.x.pow-a.x.pow)[0];if(!t)return null;
  const thr=g.turn>=5?3:4;if(t.x.pow<thr||RK()>.7)return null;return t}
 const aiCounter=(g,s)=>hasKw(g,s,"ovr")&&RK()<.85;
-function draw(g){["P","D"].forEach(s=>{if(g.deck[s].length&&g.hand[s].length<7)g.hand[s].push(g.deck[s].shift())})}
+const DRAW=2,MAXHAND=8;
+function draw(g){["P","D"].forEach(s=>{for(let k=0;k<DRAW;k++)if(g.deck[s].length&&g.hand[s].length<MAXHAND)g.hand[s].push(g.deck[s].shift())})}
 function endTurn(g){g.turn++;draw(g);rollEvent(g)}
 function doSwap(g){g.seat={A:g.seat.B,B:g.seat.A};g.swap=!g.swap}
 function closing(g){const ev=[];if(g.close.P>=0){g.lanes[g.close.P].P.push({c:{name:["Slutanförande","Closing"],ty:"GEN",icon:"🎙️",kw:"plain",cost:0,pow:3},pow:3,base:3,struck:false,turn:7,s:"P"});ev.push({t:"close",s:"P",l:g.close.P})}
