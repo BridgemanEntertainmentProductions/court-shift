@@ -1,0 +1,23 @@
+{
+ "arthur": "assets/arthur.webp",
+ "cases": {
+  "tarta": [
+   "assets/cases/tarta_0.webp",
+   "assets/cases/tarta_1.webp",
+   "assets/cases/tarta_2.webp",
+   "assets/cases/tarta_3.webp"
+  ],
+  "zoo": [
+   "assets/cases/zoo_0.webp",
+   "assets/cases/zoo_1.webp",
+   "assets/cases/zoo_2.webp",
+   "assets/cases/zoo_3.webp"
+  ],
+  "angare": [
+   "assets/cases/angare_0.webp",
+   "assets/cases/angare_1.webp",
+   "assets/cases/angare_2.webp",
+   "assets/cases/angare_3.webp"
+  ]
+ }
+}

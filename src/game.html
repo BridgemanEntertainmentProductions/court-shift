@@ -1,0 +1,641 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+<title>COURT SHIFT DUEL</title>
+<style>
+/*FONTS*/
+:root{--ink:#14213D;--gold:#FFD23F;--sun:#FFD23F;--red:#FF3B3B;--blue:#3D8BFF;--mint:#1FCB8B;--paper:#FFF9EA;--display:"Bangers",Impact,sans-serif;--body:"Rubik",system-ui,sans-serif;--mag:pointer}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html,body{height:100%;overflow:hidden;font-family:var(--body);color:var(--ink);user-select:none;-webkit-user-select:none;touch-action:manipulation}
+body{background:#120a06;display:flex;justify-content:center}
+#app{position:relative;width:100%;max-width:480px;height:100%;display:flex;flex-direction:column;overflow:hidden;background:radial-gradient(ellipse at 50% -10%,#6b3a1f 0,#3a1f10 45%,#1c0f08 100%)}
+#app:before{content:"";position:absolute;inset:0;pointer-events:none;background:repeating-linear-gradient(90deg,rgba(255,255,255,.025) 0 2px,transparent 2px 46px)}
+.btn{font-family:var(--display);font-size:22px;letter-spacing:1px;background:var(--gold);color:var(--ink);border:3px solid var(--ink);border-radius:14px;box-shadow:4px 4px 0 var(--ink);padding:9px 18px;cursor:pointer}
+.btn:active{transform:translate(3px,3px);box-shadow:1px 1px 0 var(--ink)}
+.btn.red{background:var(--red);color:#fff}.btn.blue{background:var(--blue);color:#fff}.btn.mint{background:var(--mint)}.btn.sm{font-size:16px;padding:6px 12px}.btn.wh{background:#fff}
+.btn[disabled]{opacity:.4;pointer-events:none}
+/* top */
+.top{position:relative;display:flex;align-items:center;gap:6px;padding:max(8px,env(safe-area-inset-top)) 9px 4px}
+.logo{white-space:nowrap;font-family:var(--display);font-size:20px;color:var(--gold);letter-spacing:1px;-webkit-text-stroke:1px var(--ink);text-shadow:2px 2px 0 #000;flex:1}
+.pill{font-weight:800;font-size:10.5px;padding:3px 8px;border:2px solid var(--ink);border-radius:99px;box-shadow:2px 2px 0 #000;white-space:nowrap;background:var(--paper)}
+.pill.P{background:var(--red);color:#fff}.pill.D{background:var(--blue);color:#fff}
+.ic{width:30px;height:30px;flex:none;border-radius:50%;border:2px solid var(--ink);background:var(--paper);font-size:14px;display:grid;place-items:center;box-shadow:2px 2px 0 #000;cursor:pointer}
+.judge{position:relative;display:flex;gap:7px;align-items:center;margin:2px 9px 6px}
+.ava{width:44px;height:44px;flex:none;border-radius:50%;border:3px solid var(--ink);overflow:hidden;background:var(--gold);box-shadow:2px 2px 0 #000}
+.ava img{width:100%;height:100%;object-fit:cover;object-position:50% 20%}
+.bubble{flex:1;background:var(--paper);border:3px solid var(--ink);border-radius:13px;padding:4px 9px;font-weight:600;font-size:12px;line-height:1.28;min-height:44px;box-shadow:2px 2px 0 #000;display:flex;flex-direction:column;justify-content:center}
+.bubble b{font-size:9px;letter-spacing:.6px;color:var(--red);text-transform:uppercase}
+/* board */
+.board{position:relative;flex:1;min-height:0;display:grid;grid-template-columns:repeat(3,1fr);gap:6px;padding:0 8px}
+.lane{position:relative;display:flex;flex-direction:column;border-radius:14px;background:linear-gradient(#5a341c,#3e2312);border:3px solid #1a0e06;box-shadow:inset 0 0 0 2px rgba(255,255,255,.06);overflow:hidden;min-height:0}
+.lane.tgt{outline:3px dashed var(--gold);outline-offset:-3px;animation:lpulse .8s infinite alternate;cursor:pointer}
+.lane.no{opacity:.55}
+@keyframes lpulse{to{background:linear-gradient(#7a4a24,#4e2c16)}}
+.zone{flex:1;display:grid;grid-template-columns:1fr 1fr;gap:4px;padding:5px;align-content:start;min-height:0}
+.zone.opp{align-content:end}
+.mid{background:var(--paper);border-top:3px solid var(--ink);border-bottom:3px solid var(--ink);padding:4px 3px;text-align:center}
+.mid .nm{font-family:var(--display);font-size:15px;letter-spacing:.5px;line-height:1}
+.mid .pw{display:flex;justify-content:center;align-items:center;gap:5px;margin-top:3px}
+.pw span{min-width:30px;font-family:var(--display);font-size:19px;line-height:1.1;padding:0 5px;border:2px solid var(--ink);border-radius:8px;color:#fff}
+.pw .P{background:var(--red)}.pw .D{background:var(--blue)}
+.pw span.lead{transform:scale(1.18);box-shadow:0 0 0 3px var(--gold)}
+.mid .st{font-size:9px;font-weight:800;text-transform:uppercase;margin-top:2px}
+.mid .evb{margin-top:3px;font-size:9.5px;font-weight:700;background:var(--ink);color:var(--gold);border-radius:7px;padding:2px 3px;line-height:1.15}
+.chip{position:relative;aspect-ratio:1;border-radius:9px;border:2px solid var(--ink);overflow:hidden;background:#fff;box-shadow:1px 2px 0 #000}
+.chip img{width:100%;height:100%;object-fit:cover;object-position:50% 25%}
+.chip .em{display:grid;place-items:center;height:100%;font-size:22px}
+.chip .pv{position:absolute;right:-1px;bottom:-1px;min-width:19px;text-align:center;font-family:var(--display);font-size:14px;color:#fff;border:2px solid var(--ink);border-radius:7px 0 7px 0;padding:0 2px}
+.chip.P .pv{background:var(--red)}.chip.D .pv{background:var(--blue)}
+.chip.P{border-color:#7a1010}.chip.D{border-color:#0b3a8a}
+.chip.struck{filter:grayscale(1) brightness(.7)}.chip.struck:after{content:"✖";position:absolute;inset:0;display:grid;place-items:center;color:var(--red);font-size:34px;font-weight:900;text-shadow:0 0 3px #fff}
+.chip.pend{border-style:dashed;opacity:.85;cursor:pointer}
+.chip.new{animation:cflip .5s ease both}
+.chip.hit{animation:shake .4s}
+@keyframes cflip{from{transform:rotateY(90deg) scale(1.3)}to{transform:none}}
+@keyframes shake{25%{transform:translateX(-4px)}75%{transform:translateX(4px)}}
+/* hand */
+.handbar{display:flex;align-items:center;gap:8px;padding:6px 9px 2px}
+.clock{font-family:var(--display);font-size:20px;color:var(--gold);letter-spacing:1px;text-shadow:2px 2px 0 #000;white-space:nowrap}
+.hint{flex:1;color:#fff;font-size:11.5px;font-weight:700;line-height:1.2;opacity:.9}
+.hand{display:flex;gap:7px;padding:5px 9px max(10px,env(safe-area-inset-bottom));overflow-x:auto;min-height:172px}
+.card{position:relative;flex:0 0 112px;height:162px;border-radius:13px;border:3px solid var(--ink);background:var(--paper);box-shadow:3px 3px 0 #000;display:flex;flex-direction:column;overflow:hidden;cursor:pointer;transition:transform .15s}
+.card.P{background:linear-gradient(#fff 0,#FFE3E3 100%)}.card.D{background:linear-gradient(#fff 0,#DCEBFF 100%)}
+.card.sel{transform:translateY(-10px);box-shadow:0 0 0 4px var(--gold),3px 8px 0 #000}
+.card.dis{opacity:.45}
+.card .tyb{position:absolute;left:4px;top:42px;z-index:2;font-size:9px;font-weight:800;text-transform:uppercase;padding:1px 5px;border:2px solid var(--ink);border-radius:8px;color:var(--ink);white-space:nowrap;box-shadow:1px 1px 0 #000}
+.card .ty{font-size:9px!important}
+.chip .ti{position:absolute;left:-1px;top:-1px;width:17px;height:17px;display:grid;place-items:center;font-size:10px;border:2px solid var(--ink);border-radius:0 0 7px 0;z-index:2}
+.mid .nm i{font-style:normal;margin-right:2px}
+.legend{display:grid;grid-template-columns:1fr 1fr;gap:4px;text-align:left;font-size:11.5px;font-weight:700}.legend span{border:2px solid var(--ink);border-radius:8px;padding:2px 6px}
+.card.react .cost{background:var(--gold);color:var(--ink)}
+.hl{animation:hlp .8s infinite alternate;position:relative;z-index:5}
+@keyframes hlp{from{box-shadow:0 0 0 3px #FFD23F,3px 3px 0 #000}to{box-shadow:0 0 0 7px #FFD23F,0 0 22px #FFD23F}}
+.coach.forced{pointer-events:none}.coach.forced .btn{display:none}
+.tgtrow{display:flex;gap:8px;flex-wrap:wrap;justify-content:center}
+.tgt{width:96px;background:#fff;border:3px solid var(--ink);border-radius:12px;box-shadow:3px 3px 0 #000;padding:5px;cursor:pointer;font-size:11px;font-weight:700;line-height:1.2;text-align:center}
+.tgt .a{height:64px;border-radius:8px;overflow:hidden;border:2px solid var(--ink);margin-bottom:4px;background:#eee}.tgt .a img{width:100%;height:100%;object-fit:cover;object-position:50% 25%}.tgt .a .em{font-size:34px;display:grid;place-items:center;height:100%}
+.tgt{overflow-wrap:anywhere}.tgt .pw{display:inline-block;background:var(--ink);color:#fff;border-radius:8px;padding:0 6px;margin-top:3px}
+.tip{display:flex;gap:8px;align-items:flex-start;background:#FFF6CC;border:3px solid var(--ink);border-radius:12px;padding:6px 8px;text-align:left;font-size:12.5px;font-weight:600}.tip img{width:40px;height:40px;border-radius:10px;border:2px solid var(--ink);flex:none}
+.card .art{height:62px;flex:none;background:#fff;border-bottom:2px solid var(--ink)}
+.card .art img{width:100%;height:100%;object-fit:cover;object-position:50% 25%}
+.card .art .em{display:grid;place-items:center;height:100%;font-size:34px}
+.card .cost,.card .pow{position:absolute;top:3px;width:26px;height:26px;border-radius:50%;border:2px solid var(--ink);display:grid;place-items:center;font-family:var(--display);font-size:16px;z-index:2}
+.card .cost{left:3px;background:var(--gold)}.card .pow{right:3px;color:#fff}
+.card.P .pow{background:var(--red)}.card.D .pow{background:var(--blue)}
+.card .nm{font-weight:800;font-size:11px;line-height:1.1;text-align:center;padding:3px 3px 1px}
+.card .kw{font-size:9.5px;font-weight:600;line-height:1.15;text-align:center;padding:0 4px;flex:1;overflow:hidden}
+.card .ty{font-size:8.5px;font-weight:800;text-transform:uppercase;text-align:center;padding:2px;background:var(--ink);color:#fff;letter-spacing:.3px}
+.drag{position:fixed;z-index:80;pointer-events:none;transform:translate(-50%,-60%) rotate(-4deg) scale(.9);opacity:.92}
+/* overlays */
+.ov{position:absolute;inset:0;z-index:30;background:rgba(8,6,4,.84);display:none;place-items:center;padding:14px}
+.ov.show{display:grid}
+.modal{background:var(--paper);border:4px solid var(--ink);border-radius:20px;box-shadow:7px 7px 0 #000;width:100%;max-width:420px;padding:14px;text-align:center;display:flex;flex-direction:column;gap:10px;animation:popin .28s cubic-bezier(.2,1.4,.4,1);max-height:100%;overflow-y:auto}
+.modal>*{flex-shrink:0}
+@keyframes popin{from{transform:scale(.4);opacity:0}to{transform:none;opacity:1}}
+.badge{align-self:center;background:var(--ink);color:var(--gold);font-weight:800;font-size:11px;letter-spacing:1px;padding:4px 12px;border-radius:99px;text-transform:uppercase}
+.mt{font-family:var(--display);font-size:30px;line-height:1;letter-spacing:1px}
+.mp{font-size:13.5px;font-weight:600;line-height:1.4}
+.say{background:#fff;border:3px solid var(--ink);border-radius:13px;padding:7px 9px;text-align:left;font-size:13px;font-weight:600;line-height:1.35;display:flex;gap:8px;align-items:flex-start}
+.say b{display:block;font-size:10px;letter-spacing:.5px;color:var(--red);text-transform:uppercase}
+.pi{width:42px;height:42px;flex:none;border-radius:50%;border:3px solid var(--ink);object-fit:cover;object-position:50% 20%}
+.face{width:100px;height:100px;border-radius:20px;border:4px solid var(--ink);box-shadow:4px 4px 0 #000;object-fit:cover;background:#fff}
+.row{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;align-items:center}
+.casecard,.choice{background:#fff;border:3px solid var(--ink);border-radius:13px;box-shadow:3px 3px 0 #000;padding:8px 10px;text-align:left;cursor:pointer;display:flex;gap:10px;align-items:center}
+.casecard img{width:48px;height:48px;border-radius:11px;border:3px solid var(--ink);object-fit:cover}
+.casecard b,.choice b{display:block;font-size:14px}.casecard span,.choice span{font-size:12px;font-weight:600;color:#555}
+.casecard .st{margin-left:auto;font-size:12px;white-space:nowrap;text-align:right}
+.note{background:#EEF4FF;border:2px dashed var(--blue);border-radius:12px;padding:9px;text-align:left;font-size:12.5px;line-height:1.4;font-weight:600}
+.note b{color:var(--blue)}
+.stats{background:#fff;border:3px solid var(--ink);border-radius:12px;padding:9px;text-align:left;font-size:13px;font-weight:600;line-height:1.55}
+.stars{font-size:32px;letter-spacing:4px}
+.title-big{font-family:var(--display);font-size:56px;line-height:.9;color:var(--gold);-webkit-text-stroke:2.5px var(--ink);text-shadow:5px 5px 0 #000;letter-spacing:2px}
+.rank{display:inline-block;background:var(--ink);color:var(--gold);font-weight:800;font-size:12px;padding:4px 10px;border-radius:99px}
+.doc{position:relative;background:#fff;border:2px solid #999;box-shadow:3px 3px 0 rgba(0,0,0,.25);padding:13px 13px 17px;text-align:left;font-family:Georgia,"Times New Roman",serif;color:#111;font-size:12.5px;line-height:1.45;overflow-wrap:anywhere}
+.doc .dh{display:grid;grid-template-columns:1fr auto;gap:8px;border-bottom:2px solid #111;padding-bottom:6px;margin-bottom:6px}
+.doc .dh b{font-size:12px;letter-spacing:.5px}.doc .dh span{text-align:right;font-weight:700;font-size:11.5px}
+.doc .ds{font-weight:700;letter-spacing:1px;font-size:11px;margin:9px 0 2px;border-bottom:1px solid #ccc}
+.doc ol{margin:2px 0 0 18px}
+.doc .dsig{margin-top:12px;font-size:12px}.doc .dsig span{font-family:"Brush Script MT",cursive;font-size:22px;color:#1b3a8a}
+.dstamp{position:absolute;right:10px;bottom:16px;transform:rotate(-14deg);font-family:var(--display);font-size:25px;letter-spacing:1px;border:4px solid;border-radius:10px;padding:2px 10px;opacity:.85}
+.dstamp.g{color:#C81E1E;border-color:#C81E1E}.dstamp.n{color:#0b5fd0;border-color:#0b5fd0}
+.stamp{position:absolute;left:50%;top:38%;z-index:45;transform:translate(-50%,-50%) scale(0) rotate(-10deg);font-family:var(--display);font-size:38px;color:var(--gold);-webkit-text-stroke:2px var(--ink);text-shadow:4px 4px 0 var(--ink);background:var(--red);border:4px solid var(--ink);border-radius:16px;padding:5px 16px;pointer-events:none;white-space:nowrap;transition:transform .22s cubic-bezier(.2,1.5,.4,1)}
+.stamp.on{transform:translate(-50%,-50%) scale(1) rotate(-7deg)}.stamp.D{background:var(--blue);color:#fff}
+.ticker{position:absolute;left:10px;right:10px;top:46%;z-index:40;pointer-events:none;display:flex;justify-content:center}
+.ticker div{background:var(--ink);color:#fff;font-weight:700;font-size:13px;line-height:1.3;padding:8px 12px;border-radius:12px;border:3px solid var(--gold);box-shadow:4px 4px 0 #000;max-width:94%;text-align:center;animation:popin .25s}
+.black{position:absolute;inset:0;z-index:50;background:#000;color:#fff;display:none;place-items:center;font-family:var(--display);font-size:34px;letter-spacing:2px;text-align:center;padding:20px}
+.black.show{display:grid;animation:popin .5s}
+.curtain{position:absolute;inset:0;z-index:55;display:none;flex-direction:column;align-items:center;justify-content:center;gap:16px;padding:24px;text-align:center;color:#fff}
+.curtain.show{display:flex}.curtain.P{background:radial-gradient(#8B2E2E,#2a0808)}.curtain.D{background:radial-gradient(#1c4f9a,#06142e)}
+.curtain .mt{color:#fff;font-size:40px}
+.coach{position:absolute;left:10px;right:10px;z-index:42;display:none;gap:10px;align-items:flex-start;background:#fff;border:4px solid var(--ink);border-radius:16px;box-shadow:5px 5px 0 #000;padding:9px}
+.coach.show{display:flex}
+.coach img{width:50px;height:50px;border-radius:12px;border:3px solid var(--ink);flex:none}
+.coach .ctx{font-size:12.5px;font-weight:600;line-height:1.35;flex:1}
+.coach .ctx b{display:block;font-family:var(--display);font-size:16px;color:var(--red)}
+.coach .btn{margin-top:5px;font-size:14px;padding:3px 12px}
+.toast{position:absolute;left:50%;bottom:200px;transform:translateX(-50%);z-index:44;background:var(--ink);color:#fff;font-weight:700;font-size:12.5px;padding:7px 11px;border-radius:10px;opacity:0;transition:opacity .25s;pointer-events:none;width:max-content;max-width:90%;text-align:center}
+.toast.on{opacity:1}
+.cardbig{display:flex;justify-content:center}.cardbig .card{flex:0 0 150px;height:210px;transform:none}.cardbig .card .art{height:90px}.cardbig .card .kw{font-size:11px}.cardbig .card .nm{font-size:13px}
+/* splash */
+#splash{position:absolute;inset:0;z-index:60;overflow:hidden;cursor:pointer}
+#splash.off{display:none}
+.dawn{position:absolute;inset:0;background:#0B1433;transition:opacity .8s}
+#splash.p2 .dawn{opacity:0;pointer-events:none}
+.titlecard{position:absolute;inset:0;display:none;flex-direction:column;align-items:center;justify-content:center;gap:14px;padding:16px;overflow:hidden;background:radial-gradient(circle at 50% 32%,#FFF1A8 0,#FFC93C 22%,#FF8A1F 55%,#C8321E 100%)}
+.titlecard:before{content:"";position:absolute;left:50%;top:32%;width:200vmax;height:200vmax;margin:-100vmax;background:repeating-conic-gradient(rgba(255,255,255,.22) 0 8deg,transparent 8deg 16deg);-webkit-mask:none;mask:none;animation:spin 80s linear infinite;pointer-events:none}
+.titlecard>*{position:relative}
+.titlecard .tsub{font-weight:800;font-size:15px;background:#fff;color:var(--ink);border:3px solid var(--ink);border-radius:12px;padding:6px 14px;box-shadow:3px 3px 0 var(--ink);text-align:center;transform:rotate(-1.5deg)}
+.titlecard .tap{font-family:var(--display);font-size:24px;letter-spacing:2px;color:#fff;-webkit-text-stroke:1.5px var(--ink);paint-order:stroke fill;text-shadow:3px 3px 0 var(--ink);animation:tapp 1.1s ease-in-out infinite alternate;opacity:1}
+@keyframes tapp{from{transform:scale(.94)}to{transform:scale(1.06)}}
+#splash.p2 .titlecard{display:flex}
+.tsub{color:#fff;font-weight:800;font-size:15px;text-align:center;text-shadow:1px 1px 0 #000}
+.tap{color:#fff;font-weight:800;animation:blink 1.4s infinite}
+.pz{position:absolute;inset:0;z-index:46;background:rgba(8,6,4,.88);display:none;align-items:center;justify-content:center;padding:14px}
+.pz.show{display:flex}
+.pzb{width:100%;max-width:400px;background:var(--paper);border:4px solid var(--ink);border-radius:20px;box-shadow:7px 7px 0 #000;padding:12px;display:flex;flex-direction:column;gap:9px;text-align:center;animation:popin .25s}
+.pzh{display:flex;gap:9px;align-items:center;text-align:left}.pzh .art{width:54px;height:54px;flex:none;border-radius:12px;border:3px solid var(--ink);overflow:hidden;background:#fff}.pzh .art img{width:100%;height:100%;object-fit:cover}.pzh .art .em{font-size:30px;display:grid;place-items:center;height:100%}
+.pzh b{display:block;font-family:var(--display);font-size:21px;letter-spacing:.5px;line-height:1}.pzh span{font-size:12px;font-weight:700;opacity:.75}
+.pzt{height:10px;border:2px solid var(--ink);border-radius:9px;overflow:hidden;background:#fff}.pzt i{display:block;height:100%;background:linear-gradient(90deg,var(--red),var(--gold));transform-origin:left}
+.pzq{font-size:14px;font-weight:700;line-height:1.35}
+.sent{font-size:15px;font-weight:600;line-height:1.7;background:#fff;border:2px solid var(--ink);border-radius:12px;padding:8px}
+.sent.tapme span{display:inline-block;padding:0 3px;margin:1px;border-radius:6px;cursor:pointer;background:#FFF4C2;border:1px solid #e8d38a}
+.sent.tapme span:active{background:var(--gold)}
+.opts{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.opt{font-size:30px;letter-spacing:3px;background:#fff;border:3px solid var(--ink);border-radius:12px;padding:8px 0;cursor:pointer;box-shadow:3px 3px 0 #000}
+.opt:active{transform:translate(2px,2px)}
+.target{font-size:38px;letter-spacing:5px;background:var(--ink);color:#fff;border-radius:12px;padding:6px}
+.slots{display:flex;gap:5px;justify-content:center}.slots i{width:34px;height:40px;border:3px solid var(--ink);border-radius:8px;background:#fff;font-family:var(--display);font-size:24px;font-style:normal;display:grid;place-items:center}
+.tiles{display:flex;gap:6px;justify-content:center;flex-wrap:wrap;min-height:52px}
+.tile{width:42px;height:46px;border:3px solid var(--ink);border-radius:9px;background:var(--gold);font-family:var(--display);font-size:26px;display:grid;place-items:center;cursor:pointer;box-shadow:2px 3px 0 #000;animation:drop .45s cubic-bezier(.3,1.4,.5,1) both}
+.tile.used{visibility:hidden}
+.opt.sm{font-size:22px;letter-spacing:1px;font-family:var(--display)}
+.tl{display:flex;flex-direction:column;gap:6px}
+.tli{position:relative;background:#fff;border:3px solid var(--ink);border-radius:11px;padding:7px 34px 7px 9px;text-align:left;font-size:13.5px;font-weight:600;cursor:pointer;box-shadow:2px 2px 0 #000}
+.tli b{font-family:var(--display);font-size:17px;color:var(--red);margin-right:4px}
+.tli span{position:absolute;right:6px;top:50%;transform:translateY(-50%);width:22px;height:22px;border-radius:50%;display:grid;place-items:center;font-family:var(--display);font-size:15px}
+.tli.on{background:#D7F7E8}.tli.on span{background:#0B7A55;color:#fff}
+.grid4{display:grid;grid-template-columns:repeat(4,1fr);gap:6px}
+.gc{background:#fff;border:3px solid var(--ink);border-radius:11px;font-size:30px;padding:6px 0;cursor:pointer;box-shadow:2px 2px 0 #000}
+.grid4.small .gc{font-size:22px;padding:3px 0;cursor:default}
+.gc.on{background:var(--gold)}
+@keyframes drop{from{transform:translateY(-160px) rotate(-20deg);opacity:0}to{transform:none;opacity:1}}
+.pzr{font-family:var(--display);font-size:30px;letter-spacing:1px}.pzr.ok{color:#0B7A55}.pzr.bad{color:var(--red)}
+.vstamp{font-family:var(--display);font-size:54px;letter-spacing:2px;border:6px solid;border-radius:16px;padding:4px 18px;transform:rotate(-6deg);align-self:center;animation:popin .4s}
+.vstamp.g{color:#C81E1E;border-color:#C81E1E}.vstamp.n{color:#0b5fd0;border-color:#0b5fd0}
+.vrows{display:flex;flex-direction:column;gap:5px}.vrows div{display:flex;justify-content:space-between;align-items:center;background:#fff;border:3px solid var(--ink);border-radius:10px;padding:5px 9px;font-weight:800;font-size:14px}
+.vrows .ok{color:#C81E1E}.vrows .no{color:#0b5fd0}
+.reqs{display:flex;flex-direction:column;gap:5px;text-align:left}.reqs div{background:#fff;border:2px solid var(--ink);border-radius:10px;padding:5px 8px;font-size:12.5px;font-weight:600}.reqs b{font-family:var(--display);font-size:15px;letter-spacing:.5px;margin-right:4px}
+.link{background:none;border:none;font-weight:800;font-size:13px;color:var(--ink);text-decoration:underline;cursor:pointer}
+
+/* ===== MENU ===== */
+#menu{position:absolute;inset:0;z-index:25;display:none;flex-direction:column;align-items:center;justify-content:center;gap:10px;padding:18px 16px;overflow:hidden;background:radial-gradient(circle at 50% 30%,#FFF1A8 0,#FFC93C 22%,#FF8A1F 55%,#C8321E 100%)}
+#menu.show{display:flex}
+#menu:before{content:"";position:absolute;left:50%;top:30%;width:200vmax;height:200vmax;margin:-100vmax;background:repeating-conic-gradient(rgba(255,255,255,.22) 0 8deg,transparent 8deg 16deg);animation:spin 80s linear infinite;pointer-events:none}
+#menu>*:not(.marthur){position:relative}
+.mhero,.mside{display:flex;flex-direction:column;align-items:center;gap:10px}.mside{width:100%;max-width:320px}
+@keyframes spin{to{transform:rotate(360deg)}}
+.presents{font-weight:800;font-size:10.5px;letter-spacing:2.5px;color:var(--ink);background:rgba(255,255,255,.7);border:2px solid var(--ink);border-radius:99px;padding:3px 11px}
+.coinwrap{perspective:900px;height:178px;display:flex;flex-direction:column;align-items:center}
+.coin{width:150px;height:150px;position:relative;transform-style:preserve-3d;animation:coinspin 6s cubic-bezier(.65,0,.35,1) infinite}
+@keyframes coinspin{0%,22%{transform:rotateY(0)}42%,72%{transform:rotateY(540deg)}92%,100%{transform:rotateY(1080deg)}}
+.cf{position:absolute;inset:0;border-radius:50%;backface-visibility:hidden;-webkit-backface-visibility:hidden;overflow:hidden;border:7px solid #FFD23F;box-shadow:0 0 0 4px var(--ink),inset 0 0 0 5px var(--ink)}
+.cf img{width:100%;height:100%;object-fit:cover;object-position:50% 20%}
+.cf.P{background:var(--red)}.cf.D{background:var(--blue);transform:rotateY(180deg)}
+.cf b{position:absolute;left:0;right:0;bottom:0;padding:3px 0 9px;text-align:center;font-family:var(--display);font-size:17px;letter-spacing:1.5px;color:#fff;background:var(--ink);z-index:1}.cf.P b{color:#FF8A8A}.cf.D b{color:#9CC4FF}
+.cf:after{content:"";position:absolute;inset:0;border-radius:50%;background:linear-gradient(120deg,rgba(255,255,255,.45) 0,transparent 35%)}
+.coinsh{width:110px;height:14px;border-radius:50%;background:rgba(0,0,0,.28);margin-top:10px;animation:coinsh 6s cubic-bezier(.65,0,.35,1) infinite}
+@keyframes coinsh{0%,22%,42%,72%,92%,100%{transform:scaleX(1)}32%,82%{transform:scaleX(.55)}}
+.cslogo{display:flex;flex-direction:column;align-items:center;margin-top:-4px}
+.cslogo .l1{font-family:var(--display);font-size:66px;line-height:.9;letter-spacing:3px;color:var(--gold);-webkit-text-stroke:3px var(--ink);paint-order:stroke fill;text-shadow:5px 5px 0 var(--ink);transform:rotate(-4deg)}
+.cslogo .l2{display:flex;align-items:center;gap:8px;margin-top:-2px;background:linear-gradient(100deg,var(--red) 0 50%,var(--blue) 50% 100%);border:4px solid var(--ink);border-radius:14px;padding:0 16px;box-shadow:5px 5px 0 var(--ink);transform:rotate(-4deg) skewX(-8deg)}
+.cslogo .l2 span{font-family:var(--display);font-size:56px;line-height:1.05;letter-spacing:4px;color:#fff;-webkit-text-stroke:2.5px var(--ink);paint-order:stroke fill;text-shadow:3px 3px 0 var(--ink)}
+.cslogo .l2 i{font-style:normal;font-family:var(--display);font-size:30px;color:var(--gold);-webkit-text-stroke:1.5px var(--ink);paint-order:stroke fill;animation:nudge 1.2s ease-in-out infinite alternate}
+@keyframes nudge{to{transform:translateX(4px)}}
+.cslogo .dl{margin-top:9px;font-family:var(--display);font-size:17px;letter-spacing:5px;background:var(--ink);color:var(--gold);padding:2px 16px;border-radius:8px;transform:rotate(-2deg)}
+.mbtns{display:flex;flex-direction:column;gap:9px;width:100%;max-width:300px;margin-top:4px}
+.mbtns .btn{font-size:24px;padding:10px}
+.mbtns .btn.soon{position:relative;opacity:1;background:#9aa3b5;color:#e9ecf2;box-shadow:4px 4px 0 var(--ink)}
+.mbtns .btn.soon small{position:absolute;right:-8px;top:-12px;font-size:13px;letter-spacing:1px;background:var(--gold);color:var(--ink);border:3px solid var(--ink);border-radius:8px;padding:1px 8px;transform:rotate(6deg);filter:none}
+.mrow{display:flex;gap:7px;justify-content:center;flex-wrap:wrap}
+.marthur{position:absolute;right:10px;bottom:10px;display:flex;align-items:flex-end;gap:6px;pointer-events:none}
+.marthur img{width:74px;height:74px;border-radius:50%;border:3px solid var(--ink);background:#fff;box-shadow:3px 3px 0 #000;object-fit:cover;animation:bob 2.4s ease-in-out infinite}
+.marthur span{background:#fff;border:3px solid var(--ink);border-radius:12px 12px 2px 12px;padding:5px 8px;font-size:11.5px;font-weight:700;max-width:150px;box-shadow:2px 2px 0 #000;margin-bottom:30px}
+@keyframes bob{50%{transform:translateY(-5px)}}
+@media (max-width:899px),(max-aspect-ratio:1/1){.marthur{position:static;align-self:center;margin-top:2px}.marthur span{margin-bottom:22px}}
+@media (max-height:780px){.marthur{display:none}.coinwrap{height:150px}.coin{width:124px;height:124px}.cslogo .l1{font-size:54px}.cslogo .l2 span{font-size:46px}}
+/* ===== COURTROOM (tablet/PC) ===== */
+@media (min-width:900px) and (min-aspect-ratio:1/1) and (max-height:820px){
+ .bench{padding:5px 18px 0!important;gap:10px!important}.seat{padding-bottom:5px!important;gap:2px!important}.seat img{width:42px!important;height:42px!important}.seat.j img{width:58px!important;height:58px!important}.seat i{display:none!important}
+ .card{flex-basis:118px!important;height:150px!important}.hand{min-height:160px!important}.card .kw{font-size:10px}
+ .desk{gap:5px!important;padding:8px!important}.desk .nm{font-size:16px!important}.desk .acc img{width:40px!important;height:40px!important}.desk .table{display:none!important}
+ .zone{grid-template-columns:repeat(4,minmax(0,60px))!important}
+ .judge{margin:3px 0!important}.bubble{font-size:12.5px!important;min-height:40px!important}
+}
+@media (min-width:700px) and (max-aspect-ratio:1/1){
+ #app{max-width:1000px;display:grid;grid-template-columns:1fr 1fr;grid-template-rows:auto auto auto auto 1fr auto auto;grid-template-areas:"top top" "bench bench" "deskP deskD" "say say" "board board" "bar bar" "hand hand";column-gap:10px}
+ .top{grid-area:top}.judge{grid-area:say;margin:6px 10px}.judge .ava{display:none}.board{grid-area:board}.handbar{grid-area:bar}.hand{grid-area:hand;justify-content:center;flex-wrap:wrap;overflow:visible}
+ .card{flex-basis:128px;height:182px}.bubble{font-size:14px}
+ .bench{grid-area:bench;display:flex!important;justify-content:center;gap:12px;margin:0 auto;padding:8px 20px 0;background:linear-gradient(#8a5530,#5b3218);border:4px solid #1a0e06;border-bottom-width:9px;border-radius:16px 16px 6px 6px}
+ .seat{display:flex;flex-direction:column;align-items:center;gap:3px;padding-bottom:7px}.seat img{width:60px;height:60px;border-radius:50%;border:3px solid var(--ink);background:#fff;object-fit:cover;object-position:50% 20%}
+ .seat.j img{width:80px;height:80px;border-color:var(--gold)}.seat b{font-size:10px;font-weight:800;background:var(--paper);border:2px solid var(--ink);border-radius:6px;padding:1px 6px}.seat i{display:none}
+ .desk{display:flex!important;flex-direction:row;flex-wrap:wrap;align-items:center;gap:8px;margin:8px 10px 0;padding:8px 10px;border-radius:14px;border:3px solid #1a0e06}
+ .desk.P{grid-area:deskP;background:linear-gradient(#7a2a20,#43140f)}.desk.D{grid-area:deskD;background:linear-gradient(#20407a,#0e1f43)}
+ .desk .big{width:66px;height:66px;border-radius:50%;border:3px solid var(--ink);overflow:hidden;background:#fff;order:-1}.desk .big img{width:100%;height:100%;object-fit:cover;object-position:50% 20%}
+ .desk .nm{font-family:var(--display);font-size:18px;color:#fff;text-shadow:2px 2px 0 #000}.desk .rl{display:none}.desk .table{display:none}
+ .desk .you{font-family:var(--display);font-size:14px;background:var(--gold);border:2px solid var(--ink);border-radius:8px;padding:0 8px}.desk .you.opp{background:#fff}
+ .desk .acc{display:flex;align-items:center;gap:6px}.desk .acc img{width:38px;height:38px;border-radius:50%;border:2px solid var(--ink);background:#fff}.desk .acc span{font-size:10.5px;font-weight:700;color:#fff}
+}
+.bench,.desk{display:none}
+@media (min-width:900px) and (min-aspect-ratio:1/1){
+ #app{max-width:1440px;display:grid;grid-template-columns:clamp(150px,17vw,250px) 1fr clamp(150px,17vw,250px);grid-template-rows:auto auto auto 1fr auto auto;
+  grid-template-areas:"top top top" "bench bench bench" "deskP say deskD" "deskP board deskD" "deskP bar deskD" "hand hand hand";column-gap:10px}
+ .top{grid-area:top}.judge{grid-area:say;margin:4px 0 6px}.judge .ava{display:none}.board{grid-area:board;padding:0}.handbar{grid-area:bar;padding:6px 0 2px}
+ .hand{grid-area:hand;justify-content:center;overflow:visible;min-height:200px}
+ .card{flex-basis:132px;height:188px}
+ .bubble{font-size:14px;min-height:50px}
+ .zone{grid-template-columns:repeat(4,minmax(0,82px));justify-content:center}
+ .bench{grid-area:bench;display:flex;justify-content:center;align-items:flex-end;gap:14px;margin:0 auto;padding:10px 26px 0;background:linear-gradient(#8a5530,#5b3218);border:4px solid #1a0e06;border-bottom-width:10px;border-radius:18px 18px 6px 6px;box-shadow:0 6px 0 #000,inset 0 3px 0 rgba(255,255,255,.15)}
+ .seat{display:flex;flex-direction:column;align-items:center;gap:4px;padding-bottom:8px}
+ .seat img{width:70px;height:70px;border-radius:50%;border:3px solid var(--ink);background:#fff;object-fit:cover;object-position:50% 20%;box-shadow:2px 3px 0 #000}
+ .seat.j img{width:96px;height:96px;border-color:var(--gold);box-shadow:0 0 0 3px var(--ink),3px 4px 0 #000}
+ .seat b{font-size:10.5px;font-weight:800;background:var(--paper);border:2px solid var(--ink);border-radius:6px;padding:1px 7px;white-space:nowrap}
+ .seat i{font-style:normal;font-size:9px;font-weight:800;color:#FFE7A8;text-transform:uppercase;letter-spacing:.8px}
+ .desk{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;border-radius:18px;padding:14px 10px;border:4px solid #1a0e06;box-shadow:inset 0 3px 0 rgba(255,255,255,.12)}
+ .desk.P{grid-area:deskP;background:linear-gradient(#7a2a20,#43140f)}.desk.D{grid-area:deskD;background:linear-gradient(#20407a,#0e1f43)}
+ .desk .big{width:min(170px,90%,22vh);flex-shrink:0;aspect-ratio:1;border-radius:50%;border:5px solid var(--ink);background:#fff;overflow:hidden;box-shadow:4px 5px 0 #000;transition:transform .2s}
+ .desk .big img{width:100%;height:100%;object-fit:cover;object-position:50% 20%}
+ .desk.talk .big{transform:scale(1.07) rotate(-2deg)}
+ .desk .nm{font-family:var(--display);font-size:19px;letter-spacing:.5px;color:#fff;text-align:center;line-height:1;text-shadow:2px 2px 0 #000}
+ .desk .rl{font-size:10.5px;font-weight:800;color:#FFE7A8;text-transform:uppercase;letter-spacing:1px;text-align:center}
+ .desk .you{font-family:var(--display);font-size:17px;letter-spacing:1px;background:var(--gold);color:var(--ink);border:3px solid var(--ink);border-radius:10px;padding:1px 12px;box-shadow:2px 2px 0 #000}
+ .desk .you.opp{background:#fff}
+ .desk .acc{display:flex;align-items:center;gap:8px;background:rgba(255,255,255,.12);border-radius:12px;padding:6px 8px;margin-top:4px}
+ .desk .acc img{width:54px;height:54px;border-radius:50%;border:3px solid var(--ink);background:#fff;object-fit:cover}
+ .desk .acc span{font-size:11px;font-weight:700;color:#fff;line-height:1.25}
+ .desk .table{width:100%;height:16px;border-radius:6px;background:#2a170b;border:3px solid #000;margin-top:6px}
+ #menu{flex-direction:row;gap:70px}.mside{max-width:360px}.mbtns{max-width:none}
+ .coinwrap{height:250px}.coin{width:220px;height:220px}.coinsh{width:160px}
+ .cslogo .l1{font-size:92px}.cslogo .l2 span{font-size:78px}
+ .marthur img{width:100px;height:100px}.marthur span{font-size:14px;max-width:220px}
+ .toast{bottom:240px}
+}
+/*SPLASHCSS*/
+</style>
+</head>
+<body>
+<div id="app">
+ <div class="top"><div class="logo">⚖️ COURT SHIFT</div><span class="pill" id="turnP"></span><span class="pill" id="roleP"></span>
+  <div class="ic" id="gbBtn">📜</div><div class="ic" id="noteBtn">📖</div><div class="ic" id="musBtn">🔊</div><div class="ic" id="homeBtn">🏠</div></div>
+ <div class="bench" id="bench"></div>
+ <div class="desk P" id="deskP"></div>
+ <div class="desk D" id="deskD"></div>
+ <div class="judge"><div class="ava"><img id="judgeImg" alt=""></div><div class="bubble"><b id="jname"></b><span id="say"></span></div><div class="ava" style="background:#fff"><img id="accImg" alt=""></div></div>
+ <div class="board" id="board"></div>
+ <div class="handbar"><span class="clock" id="clock"></span><span class="hint" id="hint"></span><button class="btn red" id="goBtn">KLAR</button></div>
+ <div class="hand" id="hand"></div>
+ <div id="menu"></div>
+ <div class="ticker" id="ticker"></div>
+ <div class="toast" id="toast"></div>
+ <div class="stamp" id="stamp"></div>
+ <div class="coach" id="coach"><img id="coachImg" alt=""><div class="ctx"><b>Arthur C. Bara</b><span id="coachT"></span><br><button class="btn mint" id="coachOk">OK!</button></div></div>
+ <div class="pz" id="pz"><div class="pzb" id="pzb"></div></div>
+ <div class="ov" id="ov"><div class="modal" id="modal"></div></div>
+ <div class="curtain" id="curtain"></div>
+ <div class="black" id="black"></div>
+ <div id="splash">
+  /*SPLASHHTML*/
+  <div class="titlecard"><div class="presents" id="tpres"></div><div class="coinwrap"><div class="coin"><div class="cf P"><img id="tcP" alt=""><b id="tlP"></b></div><div class="cf D"><img id="tcD" alt=""><b id="tlD"></b></div></div><div class="coinsh"></div></div><div class="cslogo"><div class="l1">COURT</div><div class="l2"><i>⇄</i><span>SHIFT</span><i>⇄</i></div><div class="dl">DUEL</div></div><div class="tsub" id="tsub"></div><p class="tap" id="taptxt"></p></div>
+ </div>
+</div>
+<script>
+let save={};try{save=JSON.parse(localStorage.getItem("courtshiftduel")||"{}")}catch(e){}
+const store=()=>{try{localStorage.setItem("courtshiftduel",JSON.stringify(save))}catch(e){}};
+/*AUDIO*/
+/*ASSETS*/
+/*ENGINE*/
+/*NOTES*/
+let LANG=save.lang||((navigator.languages&&navigator.languages[0]||navigator.language||"en").toLowerCase().startsWith("sv")?"sv":"en");
+const S=(sv,en)=>LANG==="sv"?sv:en;
+const tx=a=>a?a[LANG==="sv"?0:1]:"";
+const $=id=>document.getElementById(id);
+const pick=a=>a[Math.floor(Math.random()*a.length)];
+const note=k=>`<div class="note">${tx(NOTES[k])}</div>`;
+const img=(src,cls)=>`<img class="${cls||"pi"}" src="${src}" alt="">`;
+const sayBox=(src,name,text)=>`<div class="say">${src.startsWith("data:")?img(src):`<span style="font-size:28px">${src}</span>`}<div><b>${name}</b>${text}</div></div>`;
+const who=c=>LANG==="sv"?c.who:c.whoEn;
+const SIDE={P:()=>S("Åklagaren","The prosecution"),D:()=>S("Försvaret","The defense")};
+const ROLEN={P:()=>S("Kammaråklagare Alexander Granit","Prosecutor Alexander Granit"),D:()=>S("Advokat Daniel Filur","Defense counsel Daniel Filur")};
+const RANKS=[[0,"Notarie","Court clerk"],[800,"Biträdande jurist","Associate"],[2000,"Advokat","Advocate"],[4000,"Delägare","Partner"],[7000,"Justitieråd","Supreme Court Justice"]];
+const rankOf=xp=>RANKS.filter(r=>xp>=r[0]).pop();
+let C=null,G=null,UI={sel:-1,planner:null,queue:[],busy:true,tut:false,seen:{}};
+function sfxp(k){try{sfx[k]&&sfx[k](5)}catch(e){}}
+function gavel(){try{tone(150,0,.12,"square",.16,60);tone(120,.14,.12,"square",.14,50);hiss(.08,.15,900)}catch(e){}}
+function dingdong(){try{tone(660,0,.9,"sine",.5);tone(1320,0,.5,"triangle",.12);tone(523,.42,1.2,"sine",.5);tone(1046,.42,.7,"triangle",.12)}catch(e){}}
+function say(t){$("say").innerHTML=t}
+function stamp(t,s){const e=$("stamp");e.textContent=t;e.className="stamp on "+(s||"");gavel();try{navigator.vibrate&&navigator.vibrate(30)}catch(x){}setTimeout(()=>e.className="stamp "+(s||""),900)}
+function toast(t){const e=$("toast");e.textContent=t;e.classList.add("on");clearTimeout(toast.h);toast.h=setTimeout(()=>e.classList.remove("on"),2200)}
+function modal(h){$("modal").innerHTML=h;$("ov").classList.add("show");$("modal").scrollTop=0}
+function closeModal(){$("ov").classList.remove("show")}
+const humanSeats=()=>G.mode==="hot"?["A","B"]:["A"];
+const seatName=s=>G.mode==="hot"?S("Spelare ","Player ")+(s==="A"?"1":"2"):(s==="A"?S("Du","You"):S("Datorn","Computer"));
+const myRole=()=>UI.planner||G.seat.A;
+/* ===== CARD VISUALS ===== */
+function artOf(c){if(c.id==="arthur")return img(ARTHUR,"");if(c.side==="P"&&c.face>=0&&WF[C.id])return img(WF[C.id][c.face],"");if(EI[c.id])return img(EI[c.id],"");
+ if(EI["ta_"+c.ty])return img(EI["ta_"+c.ty],"");if(c.kw==="obj")return img(EI.sp_obj,"");if(c.kw==="ovr")return img(EI.sp_ovr,"");
+ const em={sakk:"🧑‍🔬",helhet:"🧩",tvivel:"🤔",alibi:"🏖️"}[c.id]||c.icon||"⚖️";return `<div class="em">${em}</div>`}
+const LANEC=[["#FF8A1F","🔨"],["#9B5CFF","🧍"],["#16B88A","💭"]];
+const TYI={VIT:["🗣️","#FFD23F"],TEK:["🔬","#4FD1F5"],OMS:["🧩","#FF8AC6"],TRO:["🎯","#FFD23F","VIT"],MET:["🧪","#4FD1F5","TEK"],ALT:["🔀","#FF8AC6","OMS"],GEN:["⚖️","#E4E4E4"],SP:["⚡","#FFD23F"]};
+function tyBadge(c){const t=TYI[c.ty]||TYI.GEN;if(c.id==="arthur")return `<div class="tyb" style="background:#C9A46A">🕵️ ${S("DETEKTIV","DETECTIVE")}</div>`;const m=/^(strike|debuff)(VIT|TEK|OMS)$/.exec(c.kw||"");const lbl=m?(m[1]==="strike"?S("fäller ","breaks "):"−2 ")+TYI[m[2]][0]:t[2]?S("argument","argument"):tx(TYN[c.ty]);return `<div class="tyb" style="background:${t[1]}">${t[0]} ${lbl}</div>`}
+function laneBar(c){if(isReact(c))return `<div class="ty" style="background:var(--gold);color:var(--ink)">⚡ ${S("REAKTION","REACTION")}</div>`;if(c.lane>=0){const L=LANEC[c.lane];return `<div class="ty" style="background:${L[0]};color:#fff;text-shadow:1px 1px 0 #000">${L[1]} ${S("BARA","ONLY")} ${tx(REKN[c.lane])}</div>`}return `<div class="ty">★ ${S("VALFRI BANA","ANY LANE")}</div>`}
+const TYN={VIT:["Vittne","Witness"],TEK:["Teknisk","Technical"],OMS:["Omständighet","Circumstance"],TRO:["Trovärdighet","Credibility"],MET:["Metodkritik","Method"],ALT:["Alternativ förklaring","Alternative"],GEN:["Allmänt","General"],SP:["Specialkort","Special"]};
+function cardHTML(c,i,cls){const kw=tx(KW[c.kw])||"";const pw=c.kw==="osaker"?(c.pow-2)+"–"+(c.pow+2):c.pow;
+ const rx=isReact(c);return `<div class="card ${c.side} ${cls||""} ${rx?"react":""}" data-i="${i}"><div class="cost">${rx?"⚡":c.cost}</div>${rx?"":`<div class="pow">${pw}</div>`}<div class="art">${artOf(c)}</div>${tyBadge(c)}<div class="nm">${tx(c.name)}</div><div class="kw">${kw||tx(c.text)}</div>${laneBar(c)}</div>`}
+function chipHTML(x,s,extra){const c=x.c,t=TYI[c.ty]||TYI.GEN;return `<div class="chip ${s} ${x.struck?"struck":""} ${extra||""}" data-uid="${c.uid||""}"><div class="ti" style="background:${t[1]}">${t[0]}</div>${artOf(c)}<div class="pv">${x.pow}</div></div>`}
+/* ===== RENDER ===== */
+function seatHTML(img,name,role,cls){return `<div class="seat ${cls||""}"><img src="${img}" alt=""><b>${name}</b><i>${role}</i></div>`}
+function buildCourt(){const J=S("Nämndeman","Lay judge");
+ $("bench").innerHTML=seatHTML(CF.notary,S("Notarien","The clerk"),S("Tingsnotarie","Court clerk"))+seatHTML(CF.nyfiken,"Nyfiken",J)+seatHTML(CF.judge,"Sven Uggla",S("Rådman · ordförande","Judge · presiding"),"j")+seatHTML(CF.kaffe,"Kaffe",J)+seatHTML(CF.noggrann,"Noggrann",J);
+ $("deskP").innerHTML=`<span class="you" id="youP"></span><div class="big"><img id="faceP" src="${CF.granit}" alt=""></div><div class="nm">Alexander Granit</div><div class="rl">${S("Kammaråklagare","Senior prosecutor")}</div><div class="table"></div>`;
+ $("deskD").innerHTML=`<span class="you" id="youD"></span><div class="big"><img id="faceD" src="${CF.filur}" alt=""></div><div class="nm">Daniel Filur</div><div class="rl">${S("Advokat · offentlig försvarare","Defense counsel")}</div><div class="acc"><img src="${PORTRAITS[C.id]}" alt=""><span>${who(C)}<br><span style="opacity:.75">${S("Tilltalad","Defendant")}</span></span></div><div class="table"></div>`}
+function syncDesks(){if(!G||!$("youP"))return;["P","D"].forEach(r=>{const el=$("you"+r),sd=seatOf(G,r);if(!el)return;
+ el.textContent=G.mode==="hot"?seatName(sd):(sd==="A"?S("DU","YOU"):S("DATORN","COMPUTER"));el.className="you"+(G.mode==="ai"&&sd!=="A"?" opp":"")})}
+function setFace(r,k,ms){const im=$("face"+r);if(!im)return;const base=r==="P"?"granit":"filur";im.src=CF[base+(k||"")]||CF[base];const d=$("desk"+r);d.classList.add("talk");clearTimeout(im._t);im._t=setTimeout(()=>{im.src=CF[base];d.classList.remove("talk")},ms||1800)}
+function render(){if(!G)return;syncDesks();const me=myRole(),them=opp(me);
+ $("jname").textContent=S("Rådman Sven Uggla, ordförande","Judge Sven Uggla presiding");
+ $("turnP").textContent=S("Runda ","Round ")+G.turn+"/"+TURNS;$("roleP").textContent=me==="P"?S("ÅKLAGARE","PROSECUTOR"):S("FÖRSVAR","DEFENSE");$("roleP").className="pill "+me;
+ $("accImg").src=PORTRAITS[C.id];
+ const selC=UI.sel>=0?G.hand[me][UI.sel]:null;
+ $("board").innerHTML=[0,1,2].map(l=>{const L=G.lanes[l],pp=power(G,"P",l),dp=power(G,"D",l),lead=pp>dp?"P":"D";
+  const ok=selC&&canPlace(G,me,selC,l),pend=G.pend[me].map((p,k)=>[p,k]).filter(([p])=>p.l===l);
+  const opps=L[them].map(x=>chipHTML(x,them,x.turn===G.lastRev?"new":"")).join("");
+  const mine=L[me].map(x=>chipHTML(x,me,x.turn===G.lastRev?"new":"")).join("")+pend.map(([p,k])=>`<div class="chip ${me} pend" onclick="unplaceUI(${k})">${artOf(p.c)}<div class="pv">${p.c.pow}</div></div>`).join("");
+  const ev=L.ev?EVENTS2.find(e=>e[0]===L.ev):null;
+  return `<div class="lane ${selC?(ok?"tgt":"no"):""}" data-l="${l}" onclick="tapLane(${l})"><div class="zone opp">${opps}</div>
+  <div class="mid" style="box-shadow:inset 0 6px 0 ${LANEC[l][0]}"><div class="nm" style="padding-top:3px"><i>${LANEC[l][1]}</i>${tx(REKN[l])}</div><div class="pw"><span class="P ${lead==="P"?"lead":""}">${pp}</span><span class="D ${lead==="D"?"lead":""}">${dp}</span></div>
+  <div class="st" style="color:${lead==="P"?"#C81E1E":"#0b5fd0"}">${lead==="P"?S("Styrkt","Proven"):S("Tvivel","Doubt")}</div>${ev?`<div class="evb">${tx(ev[1])}</div>`:""}</div>
+  <div class="zone">${mine}</div></div>`}).join("");
+ const left=energy(G)-spent(G,me);$("clock").textContent=`⏱ ${left}/${energy(G)}`;
+ const h=G.hand[me];$("hand").innerHTML=h.map((c,i)=>cardHTML(c,i,(UI.sel===i?"sel":"")+(c.cost>left?" dis":"")+(UI.glow===i?" hl":""))).join("")||`<div class="hint" style="padding:20px">${S("Inga kort på handen.","No cards in hand.")}</div>`;
+ $("hint").textContent=UI.busy?"":selC?S("Tryck på ett rekvisit (bana) ↑","Tap an element (lane) ↑"):S("Dra eller tryck ett kort till en bana. Tryck KLAR när du är färdig.","Drag or tap a card onto a lane. Press DONE when ready.");
+ const gb=$("goBtn");gb.textContent=S("KLAR","DONE");gb.disabled=UI.busy;gb.className="btn "+(me==="P"?"red":"blue")+(UI.ts==="go"?" hl":"")}
+/* ===== INPUT ===== */
+window.tapCard=i=>{if(UI.busy)return;const c=G.hand[myRole()][i];if(!c)return;if(isReact(c)){toast(c.kw==="obj"?S("⚡ Spelas direkt när motpartens kort vänts.","⚡ Played right after the other side's cards are revealed."):S("⚡ Spelas när motparten invänder.","⚡ Played when the other side objects."));return}
+ if(UI.ts==="card"){UI.ts="lane";UI.glow=-1;UI.sel=i;sfxp("pick");render();return coach(S("Bra! Tryck nu på en bana som lyser. Varje bana är ett rekvisit som åklagaren måste bevisa.","Good! Now tap a glowing lane. Each lane is an element the prosecution must prove."),"#board",null,true)}UI.sel=UI.sel===i?-1:i;sfxp("pick");hideCoach(true);render()};
+window.tapLane=l=>{if(UI.busy||UI.sel<0)return;const s=myRole(),c=G.hand[s][UI.sel];if(!c||!canPlace(G,s,c,l)){toast(S("Kan inte spelas där.","Can't be played there."));return}
+ const i=UI.sel;UI.sel=-1;if(c.kw==="obj"||c.kw==="ovr"){place(G,s,i,l,1);sfxp("place");render();return}
+ const tut=UI.ts==="lane"||UI.ts==="card";if(tut){UI.ts="pz";UI.glow=-1;hideCoach(true)}
+ UI.busy=true;render();puzzle(c,q=>{UI.busy=false;const j=G.hand[s].indexOf(c);if(j>=0)place(G,s,j,l,q);render();
+  if(tut){UI.ts="go";render();coach(q?S("Övertygande! Tryck nu KLAR. Försvaret har valt i hemlighet. Sedan vänds allt samtidigt.","Convincing! Now press DONE. The defense has chosen in secret. Then everything is revealed at once."):S("Lite svajigt, men kortet ligger där. Tryck nu KLAR. Sedan vänds allt samtidigt.","A bit shaky, but the card is down. Now press DONE. Then everything is revealed at once."),"#goBtn",null,true)}})};
+window.unplaceUI=k=>{if(UI.busy)return;unplace(G,myRole(),k);sfxp("pick");render()};
+(function dragInit(){let st=null,gh=null;const hand=$("hand");
+ hand.addEventListener("pointerdown",e=>{const el=e.target.closest(".card");if(!el||UI.busy)return;st={i:+el.dataset.i,x:e.clientX,y:e.clientY,el,moved:false}});
+ addEventListener("pointermove",e=>{if(!st)return;if(!st.moved&&Math.hypot(e.clientX-st.x,e.clientY-st.y)>12){st.moved=true;UI.sel=st.i;render();gh=document.createElement("div");gh.className="drag";gh.innerHTML=cardHTML(G.hand[myRole()][st.i],st.i,"");document.body.appendChild(gh)}
+  if(gh){gh.style.left=e.clientX+"px";gh.style.top=e.clientY+"px"}});
+ addEventListener("pointerup",e=>{if(!st)return;const s=st;st=null;if(gh){gh.remove();gh=null;const t=document.elementFromPoint(e.clientX,e.clientY),ln=t&&t.closest(".lane");if(ln)tapLane(+ln.dataset.l);else{UI.sel=-1;render()}}else tapCard(s.i)})})();
+$("goBtn").onclick=()=>{if(UI.busy)return;if(UI.ts==="card"||UI.ts==="lane"){toast(S("Lägg ett kort först!","Play a card first!"));return}if(UI.ts==="go")UI.ts="";UI.sel=-1;hideCoach(true);nextPlanner()};
+/* ===== MINI PUZZLES ===== */
+const SWAP={sv:["elva","natten","blå","grannen","katten","fredag","röd","sju","källaren","hunden","vänster","tolv","paraplyet","bussen"],en:["eleven","night","blue","neighbour","cat","friday","red","seven","cellar","dog","left","twelve","umbrella","bus"]};
+const SYM=["🔺","🔵","⬛","⭐","🔶","💠","❤️","🟢"];
+let PZ=null;
+const PZPOOL={VIT:["contra","memory","timeline","clock"],TEK:["match","odd","count","pair"],OMS:["word","timeline","clock","count"],GEN:["word","memory","pair","odd"],
+ TRO:["flaw","memory","timeline","contra"],MET:["flaw","odd","count","match"],ALT:["flaw","clock","word","timeline"],SP:["flaw","odd","timeline","pair"]};
+let lastPz="";
+function pzKind(c){const pool=(PZPOOL[c.ty]||PZPOOL.GEN).filter(k=>k!==lastPz);return lastPz=pick(pool)}
+const EVT={sv:["Grannen hörde en smäll","Lampan släcktes","En bil startade","Hunden skällde","Dörren slog igen","Telefonen ringde","Någon visslade","Kyrkklockan slog"],en:["The neighbour heard a bang","The light went out","A car started","The dog barked","The door slammed","The phone rang","Someone whistled","The church bell rang"]};
+const ODD=[["🍪","🥠"],["🐧","🐦"],["🔑","🗝️"],["🍰","🧁"],["👞","👟"],["🕶️","👓"],["🎩","👒"],["🧤","🧦"],["🍩","🥯"],["☂️","🌂"]];
+const CNT=["👣","🔑","🧤","🔍","🧦"];
+const hm=m=>String(Math.floor(m/60)%24).padStart(2,"0")+":"+String(m%60).padStart(2,"0");
+function puzzle(c,cb,lbl){const kind=pzKind(c),box=$("pzb"),T={word:11000,timeline:10000,memory:7500,pair:9000,clock:9000}[kind]||8000;let done=false,start=performance.now(),raf;
+ $("ticker").innerHTML="";
+ const head=(title,sub)=>`<div class="pzh"><div class="art">${artOf(c)}</div><div><b>${title}</b><span>${tx(c.name)} · ${sub}</span></div></div><div class="pzt"><i id="pzbar"></i></div>`;
+ const finish=ok=>{if(done)return;done=true;cancelAnimationFrame(raf);sfxp(ok?"ok":"bad");
+  box.insertAdjacentHTML("beforeend",`<div class="pzr ${ok?"ok":"bad"}">${lbl?lbl[ok?0:1]:ok?S("ÖVERTYGANDE! Full styrka","CONVINCING! Full strength"):S("SVAJIGT... halv styrka","SHAKY... half strength")}</div>`);
+  setTimeout(()=>{$("pz").classList.remove("show");PZ=null;cb(ok?1:0)},850)};
+ PZ={answer:ok=>finish(ok),kind};
+ const shake=el=>{el.animate([{transform:"translateX(-5px)"},{transform:"translateX(5px)"},{transform:"none"}],{duration:200});start-=1200;sfxp("bad")};
+ const tick=()=>{const f=Math.min(1,1-(performance.now()-start)/T),b=$("pzbar");if(b)b.style.transform=`scaleX(${Math.max(0,f)})`;if(f<=0)return finish(false);raf=requestAnimationFrame(tick)};
+ const choose=(opts,right,big)=>{const sh=opts.map(o=>[o,Math.random()]).sort((a,b)=>a[1]-b[1]).map(x=>x[0]);return `<div class="opts">${sh.map(o=>`<div class="opt ${big?"":"sm"}" data-o="${o}">${o}</div>`).join("")}</div>`};
+ const bindOpts=right=>box.querySelectorAll(".opt").forEach(el=>el.onclick=()=>finish(el.dataset.o===right));
+ if(kind==="contra"||kind==="flaw"){let src=tx(c.text);if(kind==="flaw")src=tx(pick(C.ev.map(r=>[r[4],r[5]])));
+  const words=src.replace(/[.,:!?"']/g,"").split(" ");const cand=words.map((w,i)=>[w,i]).filter(([w])=>w.length>=3);const [w0,k]=pick(cand.length?cand:words.map((w,i)=>[w,i]));
+  let rep=pick(SWAP[LANG]);while(rep.toLowerCase()===w0.toLowerCase())rep=pick(SWAP[LANG]);
+  const b=words.map((w,i)=>i===k?rep:w);
+  box.innerHTML=head(kind==="flaw"?S("HITTA LUCKAN!","FIND THE FLAW!"):S("HITTA MOTSÄGELSEN!","SPOT THE CONTRADICTION!"),S("tryck på ordet som ändrats","tap the word that changed"))+
+  `<div class="pzq">${kind==="flaw"?S("Protokollet:","The record:"):S("Vittnet i förhöret:","The witness in the interview:")}</div><div class="sent">${words.join(" ")}</div><div class="pzq">${S("Vittnet i rätten:","The witness in court:")}</div>
+  <div class="sent tapme">${b.map((w,i)=>`<span data-i="${i}">${w}</span>`).join(" ")}</div>`;
+  box.querySelectorAll(".tapme span").forEach(el=>el.onclick=()=>finish(+el.dataset.i===k))}
+ else if(kind==="match"){const tgt=Array.from({length:3},()=>pick(SYM));const opts=[tgt.join("")];
+  while(opts.length<4){const o=[...tgt];const j=Math.random()*3|0;let r=pick(SYM);while(r===o[j])r=pick(SYM);o[j]=r;const st=o.join("");if(!opts.includes(st))opts.push(st)}
+  box.innerHTML=head(S("MATCHA SPÅRET!","MATCH THE TRACE!"),S("hitta exakt samma spår","find the exact same trace"))+`<div class="target">${tgt.join("")}</div>`+choose(opts,0,1);bindOpts(tgt.join(""))}
+ else if(kind==="memory"){const tgt=Array.from({length:4},()=>pick(SYM)),key=tgt.join("");const opts=[key];
+  while(opts.length<4){const o=[...tgt];const j=Math.random()*4|0;let r=pick(SYM);while(r===o[j])r=pick(SYM);o[j]=r;const st=o.join("");if(!opts.includes(st))opts.push(st)}
+  box.innerHTML=head(S("MINNESBILDEN!","THE MEMORY!"),S("titta noga, sedan försvinner den","look closely, then it vanishes"))+`<div class="target" id="memT">${key}</div><div id="memO" style="visibility:hidden">${choose(opts,0,1)}</div>`;
+  start+=1800;setTimeout(()=>{if(done)return;const t=$("memT");if(t){t.textContent="❓❓❓❓";$("memO").style.visibility="visible"}},1800);bindOpts(key)}
+ else if(kind==="timeline"){const ev=[...EVT[LANG]].sort(()=>Math.random()-.5).slice(0,4);const base=18*60+(Math.random()*12|0)*15;let ts=[];while(ts.length<4){const t=base+(Math.random()*36|0)*5;if(!ts.includes(t))ts.push(t)}
+  const items=ev.map((e,i)=>({e,t:ts[i]})),order=[...items].sort((a,b)=>a.t-b.t);let n=0;
+  box.innerHTML=head(S("TIDSLINJEN!","THE TIMELINE!"),S("tryck i tidsordning, tidigast först","tap in time order, earliest first"))+`<div class="tl">${items.map((x,i)=>`<div class="tli" data-i="${i}"><b>${hm(x.t)}</b> ${x.e}<span></span></div>`).join("")}</div>`;
+  box.querySelectorAll(".tli").forEach(el=>el.onclick=()=>{if(done||el.classList.contains("on"))return;const x=items[+el.dataset.i];if(x===order[n]){n++;el.classList.add("on");el.querySelector("span").textContent=n;sfxp("pick");if(n===4)finish(true)}else shake(el)})}
+ else if(kind==="clock"){const st=17*60+(Math.random()*20|0)*15+(Math.random()*4|0)*5,d=15+(Math.random()*9|0)*5,ans=hm(st+d);
+  const v=pick([[S("Bussen gick","The bus left"),S("Resan tog","The trip took"),S("När kom den fram?","When did it arrive?")],[S("Hon gick hemifrån","She left home"),S("Promenaden tog","The walk took"),S("När var hon framme?","When did she arrive?")],[S("Tårtan sattes i ugnen","The cake went in the oven"),S("Den gräddades i","It baked for"),S("När var den klar?","When was it done?")]]);
+  const opts=[ans];[-10,10,-15,15,20,-5,5].sort(()=>Math.random()-.5).forEach(o=>{if(opts.length<4&&!opts.includes(hm(st+d+o)))opts.push(hm(st+d+o))});
+  box.innerHTML=head(S("RÄKNA UT TIDEN!","WORK OUT THE TIME!"),S("stämmer alibit?","does the alibi hold?"))+`<div class="sent" style="font-size:16px">${v[0]} <b>${hm(st)}</b>. ${v[1]} <b>${d} min</b>.<br><b>${v[2]}</b></div>`+choose(opts,0,0);bindOpts(ans)}
+ else if(kind==="odd"){const pr=pick(ODD),sw=Math.random()<.5,a=sw?pr[1]:pr[0],o=sw?pr[0]:pr[1],k=Math.random()*12|0;
+  box.innerHTML=head(S("HITTA DEN FALSKA!","FIND THE FAKE!"),S("en av dem är inte som de andra","one of them isn't like the others"))+`<div class="grid4">${Array.from({length:12},(_,i)=>`<div class="gc" data-i="${i}">${i===k?o:a}</div>`).join("")}</div>`;
+  box.querySelectorAll(".gc").forEach(el=>el.onclick=()=>{if(+el.dataset.i===k)finish(true);else shake(el)})}
+ else if(kind==="count"){const [t,...rest]=[...CNT].sort(()=>Math.random()-.5);const n=3+(Math.random()*5|0);const cells=Array.from({length:16},(_,i)=>i<n?t:pick(rest.slice(0,2))).sort(()=>Math.random()-.5);
+  const opts=[String(n)];[-2,-1,1,2].sort(()=>Math.random()-.5).forEach(o=>{if(opts.length<4&&n+o>0)opts.push(String(n+o))});
+  box.innerHTML=head(S("RÄKNA SPÅREN!","COUNT THE TRACES!"),S("hur många "+t+" finns det?","how many "+t+" are there?"))+`<div class="grid4 small">${cells.map(x=>`<div class="gc">${x}</div>`).join("")}</div>`+choose(opts,0,0);bindOpts(String(n))}
+ else if(kind==="pair"){const pool=[...SYM,"🔑","🧤","👣","🔍"].sort(()=>Math.random()-.5);const tw=pool[0],cells=[tw,tw,...pool.slice(1,7)].sort(()=>Math.random()-.5);let first=null;
+  box.innerHTML=head(S("PARA IHOP!","MAKE THE PAIR!"),S("tryck på de två som är exakt lika","tap the two that are exactly alike"))+`<div class="grid4">${cells.map((x,i)=>`<div class="gc" data-i="${i}">${x}</div>`).join("")}</div>`;
+  box.querySelectorAll(".gc").forEach(el=>el.onclick=()=>{if(done)return;const i=+el.dataset.i;if(first===null){first=i;el.classList.add("on");sfxp("pick");return}if(first===i)return;
+   if(cells[first]===cells[i]){el.classList.add("on");finish(true)}else{box.querySelectorAll(".gc")[first].classList.remove("on");first=null;shake(el)}})}
+ else{const src=tx(c.text).replace(/[.,:!?"'()]/g,"").split(" ");const cand=src.filter(w=>/^[A-Za-zÅÄÖåäöÉé]{4,7}$/.test(w));let word=(cand.length?pick(cand):"BEVIS").toUpperCase();
+  const blank=tx(c.text).replace(new RegExp(word,"i"),"_".repeat(word.length));let letters=word.split("").map((ch,i)=>({ch,i})).sort(()=>Math.random()-.5),got="";
+  box.innerHTML=head(S("BYGG ORDET!","BUILD THE WORD!"),S("tryck bokstäverna i rätt ordning","tap the letters in order"))+`<div class="sent">${blank}</div><div class="slots">${word.split("").map(()=>"<i></i>").join("")}</div>
+  <div class="tiles">${letters.map((x,j)=>`<div class="tile" style="animation-delay:${j*.08}s" data-j="${j}">${x.ch}</div>`).join("")}</div>`;
+  const slots=box.querySelectorAll(".slots i");
+  box.querySelectorAll(".tile").forEach(el=>el.onclick=()=>{if(done)return;const ch=letters[+el.dataset.j].ch;if(ch===word[got.length]){slots[got.length].textContent=ch;got+=ch;el.classList.add("used");sfxp("pick");if(got===word)finish(true)}else shake(el)})}
+ $("pz").classList.add("show");raf=requestAnimationFrame(tick)}
+/* ===== FLOW ===== */
+function home(){G=null;UI.busy=true;UI.ts="";UI.glow=-1;hideCoach(true);closeCurtain();closeModal();try{setTrack("puzzle")}catch(e){}
+ const xp=save.xp||0,r=rankOf(xp),nx=RANKS.find(x=>x[0]>xp);
+ $("menu").innerHTML=`<div class="mhero"><div class="presents">BRIDGEMAN ENTERTAINMENT ${S("PRESENTERAR","PRESENTS")}</div>
+ <div class="coinwrap"><div class="coin"><div class="cf P"><img src="${CF.granit}" alt=""><b>${S("ÅKLAGARE","PROSECUTOR")}</b></div><div class="cf D"><img src="${CF.filur}" alt=""><b>${S("FÖRSVARARE","DEFENSE")}</b></div></div><div class="coinsh"></div></div>
+ <div class="cslogo"><div class="l1">COURT</div><div class="l2"><i>⇄</i><span>SHIFT</span><i>⇄</i></div><div class="dl">DUEL</div></div></div>
+ <div class="mside"><div><span class="rank">🎓 ${S(r[1],r[2])} · ${xp} XP</span>${nx?`<div style="font-size:11px;font-weight:800;margin-top:4px;text-align:center">${S("Nästa","Next")}: ${S(nx[1],nx[2])} (${nx[0]} XP)</div>`:""}</div>
+ <div class="mbtns"><button class="btn red" onclick="pickCase('ai')">${S("EN SPELARE","ONE PLAYER")}</button><button class="btn blue soon" disabled>${S("TVÅ SPELARE","TWO PLAYERS")}<small>${S("KOMMER SNART","COMING SOON")}</small></button><button class="btn mint" onclick="tutorial()">🎓 ${S("ÖVNINGSMÅL","PRACTICE CASE")}</button></div>
+ <div class="mrow"><button class="btn sm ${LANG==="sv"?"":"wh"}" onclick="setLang('sv')">SVENSKA</button><button class="btn sm ${LANG==="en"?"":"wh"}" onclick="setLang('en')">ENGLISH</button><button class="btn sm wh" onclick="howTo()">📖 ${S("REGLER","RULES")}</button></div></div>
+ <div class="marthur"><span>${S("Rätten är satt! Vem är du i dag?","Court is in session! Who are you today?")}</span><img src="${ARTHUR}" alt=""></div>`;
+ $("menu").classList.add("show")}
+window.setLang=x=>{LANG=x;save.lang=x;store();document.documentElement.lang=x;home()};
+window.howTo=()=>modal(`<span class="badge">${S("Så spelar du","How to play")}</span><div class="stats">${S(
+ `⚖️ <b>Tre banor = tre rekvisit.</b> Gärningen, Personen och Uppsåtet. Högst styrka vinner banan.<br>🔴 <b>Åklagaren</b> måste vinna <b>alla tre</b>. 🔵 <b>Försvaret</b> räcker att vinna <b>en</b>. Åklagaren börjar med +3 per bana (förundersökningen).<br>⏱ <b>Rättegångstid.</b> Runda 1 har du 1 minut, runda 2 två minuter och så vidare. Korten kostar minuter.<br>🂠 <b>Dolda drag.</b> Båda lägger kort i hemlighet och trycker KLAR. Sedan vänds allt samtidigt.<br>✂️ <b>Försvarets vapen.</b> 🎯 Trovärdighet fäller vittnen, 🧪 Metodkritik fäller teknisk bevisning, 🔀 Alternativ förklaring fäller omständigheter.<br>✋ <b>Invändning!</b> När korten vänts kan du invända mot ett nytt kort hos motparten. Klara pusslet så stryks det. Motparten kan svara med <b>Genmäle!</b>, då lämnas invändningen utan avseende.<br>🔄 <b>Vänd på steken</b> tar motpartens starkaste kort på banan till din sida.<br>🍽️ <b>Lunchpaus</b> efter runda 3. Då kan ni byta sida!<br>🎙️ <b>Slutanförande:</b> +3 på valfri bana. Sedan dom.`,
+ `⚖️ <b>Three lanes = three elements.</b> The act, the person and intent. Highest strength wins the lane.<br>🔴 <b>The prosecution</b> must win <b>all three</b>. 🔵 <b>The defense</b> only needs <b>one</b>. The prosecution starts with +3 per lane (the investigation).<br>⏱ <b>Court time.</b> Round 1 gives 1 minute, round 2 two minutes and so on. Cards cost minutes.<br>🂠 <b>Hidden moves.</b> Both sides place cards in secret and press DONE. Then everything is revealed at once.<br>✂️ <b>Defense weapons.</b> 🎯 Credibility breaks witnesses, 🧪 Method critique breaks technical evidence, 🔀 Alternative explanations break circumstances.<br>✋ <b>Objection!</b> After the reveal you may object to one of the other side's new cards. Solve the puzzle and it's struck. The other side can answer with <b>Rebuttal!</b> and the objection is overruled.<br>🔄 <b>Turn the tables</b> takes the other side's strongest card in the lane over to your side.<br>🍽️ <b>Lunch break</b> after round 3. You may switch sides!<br>🎙️ <b>Closing:</b> +3 on a lane of your choice. Then the verdict.`)}</div>
+ <div class="legend">${["VIT","TEK","OMS","TRO","MET","ALT"].map(k=>`<span style="background:${TYI[k][1]}">${TYI[k][0]} ${tx(TYN[k])}${TYI[k][2]?" → "+TYI[TYI[k][2]][0]:""}</span>`).join("")}</div>
+ <div class="legend">${[0,1,2].map(l=>`<span style="background:${LANEC[l][0]};color:#fff;text-shadow:1px 1px 0 #000">${LANEC[l][1]} ${tx(REKN[l])}</span>`).join("")}<span>★ ${S("Valfri bana","Any lane")}</span></div>
+ <div class="mp" style="font-size:12px">${S("Färgen på symbolen visar typen. Pilen visar vad ett försvarskort fäller, t.ex. 🎯 → 🗣️ fäller vittnen. Bandet längst ner visar vilken bana kortet hör hemma på.","The symbol colour shows the type. The arrow shows what a defense card breaks, e.g. 🎯 → 🗣️ breaks witnesses. The strip at the bottom shows which lane the card belongs to.")}</div>
+ <button class="btn" onclick="home()">OK</button>`);
+window.pickCase=mode=>{UI.mode=mode;modal(`<span class="badge">${mode==="hot"?S("Två spelare · samma telefon","Two players · same phone"):S("Mot datorn","Vs computer")}</span><div class="mt">${S("VÄLJ MÅL","PICK A CASE")}</div>
+ ${CASES.map((c,i)=>`<div class="casecard" onclick="openCase(${i})"><img src="${PORTRAITS[c.id]}" alt=""><div><b>${LANG==="sv"?c.title:c.titleEn}</b><span>${S("Åklagaren mot ","The Prosecutor v. ")}${who(c)}</span></div><span class="st">${save[c.id]?"⭐".repeat(save[c.id].stars):S("NY","NEW")}</span></div>`).join("")}
+ ${mode==="hot"?`<div class="mp" style="font-size:12px">${S("Spelare 1 börjar som åklagare, Spelare 2 som försvar. Ni lämnar över telefonen mellan dragen.","Player 1 starts as prosecutor, Player 2 as defense. Pass the phone between moves.")}</div>`:""}
+ <button class="btn sm wh" onclick="home()">${S("TILLBAKA","BACK")}</button>`)};
+window.openCase=i=>{C=CASES[i];
+ modal(`<span class="badge">${S("Åklagaren mot ","The Prosecutor v. ")}${who(C)}</span><div class="row">${EI["cover_"+C.id]?`<img class="face" style="transform:rotate(3deg)" src="${EI["cover_"+C.id]}" alt="">`:""}<img class="face" style="transform:rotate(-3deg)" src="${PORTRAITS[C.id]}" alt=""></div>
+ <div class="mt">${LANG==="sv"?C.title:C.titleEn}</div><div class="mp" style="font-size:12.5px">${S("Åklagaren måste bevisa alla tre:","The prosecution must prove all three:")}</div>
+ <div class="reqs">${C.rek.map((r,i)=>`<div><b>${i+1}. ${tx(REKN[i])}</b>${tx(r)}</div>`).join("")}</div>
+ <button class="btn red" onclick="callCase()">${S("TILL RÄTTEN","TO COURT")}</button><button class="link" onclick="fullIndict(1)">📜 ${S("Läs hela stämningsansökan","Read the full indictment")}</button>`)};
+window.fullIndict=back=>modal(`<span class="badge">📜</span>${indictment()}${note(C.id==="zoo"?"penguin":"rek")}<button class="btn" onclick="${back?"openCase(CASES.indexOf(C))":"closeModal()"}">${S("TILLBAKA","BACK")}</button>`);
+function indictment(){return `<div class="doc"><div class="dh"><b>${S("ÅKLAGARMYNDIGHETEN","PROSECUTION AUTHORITY")}</b><span>${S("STÄMNINGSANSÖKAN","INDICTMENT")}<br>${C.code}</span></div>
+ <div><b>${S("Tilltalad","Accused")}:</b> ${who(C)}</div><div class="ds">${S("ANSVARSYRKANDE","CHARGE")}</div><div>${S(C.crime[0].toUpperCase()+C.crime.slice(1),C.crimeEn[0].toUpperCase()+C.crimeEn.slice(1))}</div>
+ <div class="ds">${S("GÄRNINGSBESKRIVNING","DESCRIPTION OF THE ACT")}</div><div>${tx(C.gb)}</div>
+ <div class="ds">${S("TRE REKVISIT = TRE BANOR","THREE ELEMENTS = THREE LANES")}</div><ol>${C.rek.map((r,i)=>`<li><b>${tx(REKN[i])}:</b> ${tx(r)}</li>`).join("")}</ol></div>`}
+window.callCase=()=>{$("menu").classList.remove("show");dingdong();modal(`<span class="badge">📢 ${S("Upprop","The call")}</span>${sayBox(CF.notary,S("Tingsnotarien, i högtalaren","The court clerk, over the loudspeaker"),S(`Mål ${C.code}. Åklagaren mot ${who(C)}. Parterna kallas till sal ${C.room}.`,`Case ${C.code}. The Prosecutor versus ${who(C)}. The parties are called to courtroom ${C.room}.`))}
+ <button class="btn red" onclick="begin()">${S("GÅ IN I SAL ","ENTER ROOM ")+C.room}</button>`)};
+window.begin=()=>{try{startMusic();setTrack("palace")}catch(e){}G=newGame(C,UI.mode);buildCourt();UI.tut=!save.tut&&UI.mode==="ai";UI.seen={};UI.ts="";UI.glow=-1;UI.sel=-1;UI.planner=null;G.lastRev=-1;closeModal();render();stamp(S("SAL ","ROOM ")+C.room);
+ setTimeout(()=>modal(`<span class="badge">${S("Huvudförhandling","Main hearing")}</span>
+ ${sayBox(CF.judge,S("Rådman Sven Uggla","Judge Sven Uggla"),S(`Förhandlingen är öppnad. ${who(C)}, vad säger du?`,`The hearing is open. ${who(C)}, how do you plead?`))}
+ ${sayBox(PORTRAITS[C.id],who(C),S("Jag förnekar brott!","Not guilty!"))}
+ <div class="mp" style="font-size:12.5px">⚡ ${S("Varje kort du lägger måste du <b>bevisa</b> med ett snabbt pussel. Snabb och rätt = full styrka.","Every card you play must be <b>proven</b> with a quick puzzle. Fast and right = full strength.")}</div>
+ <div class="mp" style="font-size:12.5px">${G.mode==="hot"?S("Spelare 1 är åklagare. Spelare 2 är försvar.","Player 1 is the prosecution. Player 2 is the defense."):S("Du börjar som <b style='color:var(--red)'>åklagare</b>.","You start as the <b style='color:var(--red)'>prosecutor</b>.")}</div>
+ <button class="btn red" onclick="closeModal();startTurn()">${S("BEVISNINGEN BÖRJAR","BEGIN THE EVIDENCE")}</button>`),900)};
+function startTurn(){UI.queue=[...humanSeats()];setTimeout(()=>{if(G)G.lastRev=-1},700);const e=G.lanes.find(l=>l.ev);if(e){const ev=EVENTS2.find(x=>x[0]===e.ev);say(`<b style="color:var(--ink)">${tx(ev[1])}</b> ${S("på","on")} ${tx(REKN[G.lanes.indexOf(e)])}: ${tx(ev[2])}`)}else say(G.turn===1?S("Åklagaren börjar lägga fram bevisning.","The prosecution begins presenting evidence."):S("Nästa runda. Mer tid i rätten.","Next round. More time in court."));
+ nextPlanner(true)}
+function nextPlanner(first){if(!first&&UI.planner){/* finished planning */}
+ if(UI.queue.length){const seat=UI.queue.shift();UI.planner=G.seat[seat];UI.sel=-1;
+  if(G.mode==="hot"){UI.busy=true;render();showCurtain(seat,()=>{UI.busy=false;render();tutor()})}else{UI.busy=false;render();tutor()}return}
+ UI.busy=true;if(G.mode==="ai")aiPlan(G,G.seat.B);UI.planner=G.mode==="hot"?null:G.seat.A;doReveal()}
+function showCurtain(seat,cb){const r=G.seat[seat],c=$("curtain");c.className="curtain show "+r;
+ c.innerHTML=`<div style="font-size:50px">${r==="P"?"🔴":"🔵"}</div><div class="mt">${seatName(seat)}</div><div style="font-weight:700;font-size:16px">${r==="P"?S("Du är åklagare","You are the prosecutor"):S("Du är försvarare","You are the defense")} · ${S("runda","round")} ${G.turn}</div><div style="font-size:13px;opacity:.8">${S("Lämna över telefonen. Motparten ska inte se dina kort.","Hand over the phone. The other player shouldn't see your cards.")}</div><button class="btn ${r==="P"?"red":"blue"}" id="curtOk">${S("JAG ÄR REDO","I'M READY")}</button>`;
+ $("curtOk").onclick=()=>{closeCurtain();cb()}}
+function closeCurtain(){$("curtain").className="curtain"}
+function describe(e){const L=tx(REKN[e.l]),N=e.c?tx(e.c.name):"",W=SIDE[e.s]();
+ switch(e.t){case"play":return null;
+  case"obj":return {txt:S(`✋ ${W} invänder på ${L}! ${e.n} kort stryks.`,`✋ ${W} objects on ${L}! ${e.n} card(s) struck.`),st:S("INVÄNDNING!","OBJECTION!")};
+  case"objmiss":return {txt:e.blocked?S(`🔨 Invändningen på ${L} lämnas utan avseende.`,`🔨 The objection on ${L} is overruled.`):S(`✋ ${W} invände på ${L}, men där spelades inget nytt.`,`✋ ${W} objected on ${L}, but nothing new was played there.`)};
+  case"strike":return {txt:S(`💥 ${N}: ${tx(e.x.c.name)} faller på ${L}.${e.x.c.rebut?` "${tx(e.x.c.rebut)}"`:""}`,`💥 ${N}: ${tx(e.x.c.name)} falls on ${L}.${e.x.c.rebut?` "${tx(e.x.c.rebut)}"`:""}`),st:S("BEVISET FALLER!","EVIDENCE FALLS!"),hit:e.x.c.uid};
+  case"debuff":return {txt:S(`📉 ${N}: ${e.n} bevis på ${L} försvagas (−2).`,`📉 ${N}: ${e.n} item(s) on ${L} weakened (−2).`)};
+  case"whiff":return {txt:S(`💨 ${N} på ${L} hittade inget att angripa.`,`💨 ${N} on ${L} found nothing to attack.`)};
+  case"boost":return {txt:S(`📈 ${N} stärker åklagarens bevis på ${L}.`,`📈 ${N} strengthens the prosecution on ${L}.`)};
+  case"struckObj":return null;case"fail":return {txt:S(`😬 ${N} på ${L} var för svajigt och fick ingen effekt.`,`😬 ${N} on ${L} was too shaky and had no effect.`)};case"close":return {txt:S(`🎙️ ${W} pläderar om ${L} (+3).`,`🎙️ ${W} argues ${L} (+3).`)};
+  case"arthurClash":return {txt:S("🕵️ Båda sidor kallade Arthur! Åklagaren lägger fram sin bevisning först, så han vittnar för åklagaren.","🕵️ Both sides called Arthur! The prosecution presents its evidence first, so he testifies for the prosecution."),st:"ARTHUR!"};
+  case"arthurGone":return {txt:S(`🕵️ Arthur vittnar för ${W.toLowerCase()}. Han kan inte vittna för båda sidor${e.had?", så motpartens Arthur-kort försvinner":""}.`,`🕵️ Arthur testifies for ${W.toLowerCase()}. He can't testify for both sides${e.had?", so the other side's Arthur card is removed":""}.`)};
+  case"flip":return {txt:S(`🔄 Vänd på steken! ${tx(e.x.c.name)} på ${L} hjälper nu ${W.toLowerCase()}.`,`🔄 Turn the tables! ${tx(e.x.c.name)} on ${L} now helps ${W.toLowerCase()}.`),st:S("VÄND PÅ STEKEN!","TABLES TURNED!"),hit:e.x.c.uid}}}
+function doReveal(){const ev=reveal(G);G.lastRev=G.turn;sfxp("scene");UI.planner=G.mode==="hot"?"P":G.seat.A;render();
+ const msgs=ev.map(describe).filter(Boolean);const played=ev.filter(e=>e.t==="play").length;
+ if(!msgs.length)msgs.push({txt:played?S(`🂠 Korten vänds. ${played} kort på bordet.`,`🂠 Cards revealed. ${played} card(s) placed.`):S("Ingen lade fram något den här rundan.","Nobody presented anything this round.")});
+ let k=0;const step=()=>{if(k<msgs.length){const m=msgs[k++];$("ticker").innerHTML=`<div>${m.txt}</div>`;if(m.st)stamp(m.st,"");if(m.hit){const el=document.querySelector(`.chip[data-uid="${m.hit}"]`);el&&el.classList.add("hit")}setTimeout(step,1700)}
+  else{$("ticker").innerHTML="";reactPhase(afterReveal)}};setTimeout(step,500)}
+function afterReveal(){if(UI.tut&&!UI.seen.r1){UI.seen.r1=1;return coach(S("Så funkar det: högst styrka vinner en bana. Du måste leda på ALLA tre när domen faller. Försvaret slår tillbaka med taktiker som fäller vissa typer av bevis. Sprid ut dig och var svår att läsa!","Here's how it works: highest strength wins a lane. You must lead ALL three when the verdict comes. The defense strikes back with tactics that break certain kinds of evidence. Spread out and be hard to read!"),"#board",afterReveal)}
+ if(G.turn===LUNCH_AFTER)return lunch();if(G.turn===TURNS)return closingPhase();endTurn(G);startTurn()}
+/* ===== REACTIVE OBJECTIONS ===== */
+const isHuman=r=>G.mode==="hot"||G.seat.A===r;
+const whoR=r=>G.mode==="hot"?seatName(seatOf(G,r))+" ("+(r==="P"?S("åklagare","prosecutor"):S("försvar","defense"))+")":(G.seat.A===r?S("Du","You"):SIDE[r]());
+const tip=t=>`<div class="tip">${img(ARTHUR,"")}<div>${t}</div></div>`;
+function ruling(ok,x,cb){const ticker=$("ticker");
+ if(ok){x.struck=true;render();setFace(x.s,"Sad",2200);const el=document.querySelector(`.chip[data-uid="${x.c.uid}"]`);el&&el.classList.add("hit");stamp(S("BIFALLES!","SUSTAINED!"),"");sfxp("bad");
+  ticker.innerHTML=`<div>🔨 ${S("Rådman Uggla: Invändningen bifalles. ","Judge Uggla: Sustained. ")}${tx(x.c.name)} ${S("stryks.","is struck.")}</div>`}
+ else{sfxp("pick");ticker.innerHTML=`<div>🔨 ${S("Rådman Uggla: Invändningen lämnas utan avseende.","Judge Uggla: Overruled.")}</div>`}
+ setTimeout(()=>{ticker.innerHTML="";cb()},1900)}
+/* r objects to x; the other side may rebut */
+function objection(r,t,cb){const o=opp(r),x=t.x,objC=useKw(G,r,"obj");setFace(r,"Obj",2600);stamp(S("INVÄNDNING!","OBJECTION!"),"");
+ $("ticker").innerHTML=`<div>✋ ${whoR(r)} ${S("invänder mot","object"+(G.mode==="ai"&&G.seat.A===r?"":"s")+" to")} ${tx(x.c.name)} (${tx(REKN[t.l])})!</div>`;
+ const judge=()=>{if(isHuman(r)){setTimeout(()=>puzzle(objC,q=>{if(q)G.stats[seatOf(G,r)].obj++;ruling(q,x,cb)},[S("BIFALLES!","SUSTAINED!"),S("UTAN AVSEENDE","OVERRULED")]),900)}
+  else setTimeout(()=>{const ok=Math.random()<.75;if(ok)G.stats[seatOf(G,r)].obj++;ruling(ok,x,cb)},1300)};
+ const rebut=()=>{useKw(G,o,"ovr");closeModal();setFace(o,"Obj");stamp(S("GENMÄLE!","REBUTTAL!"),"blue");$("ticker").innerHTML=`<div>🗣️ ${whoR(o)} ${S("bemöter invändningen.","rebut"+(G.mode==="ai"&&G.seat.A===o?"":"s")+" the objection.")}</div>`;setTimeout(()=>ruling(false,x,cb),1200)};
+ if(!hasKw(G,o,"ovr"))return judge();
+ if(!isHuman(o)){if(aiCounter(G,o))return setTimeout(rebut,900);return judge()}
+ window.__rb=rebut;window.__nrb=()=>{closeModal();judge()};
+ setTimeout(()=>{$("ticker").innerHTML="";modal(`<span class="badge">🗣️ ${S("Genmäle?","Rebuttal?")}${G.mode==="hot"?" · "+seatName(seatOf(G,o)):""}</span>
+  <div class="mt" style="font-size:24px">${S("Motparten invänder!","The other side objects!")}</div>
+  <div class="tgtrow"><div class="tgt" style="cursor:default"><div class="a">${artOf(x.c)}</div>${tx(x.c.name)}<br><span class="pw">${x.pow}</span></div></div>
+  ${UI.tut&&!UI.seen.rb?(UI.seen.rb=1,tip(S("Du har ett <b>Genmäle</b>. Använd det så lämnas invändningen utan avseende och ditt kort står kvar.","You have a <b>Rebuttal</b>. Use it and the objection is overruled, so your card stays."))):""}
+  <div class="row"><button class="btn mint" onclick="__rb()">🗣️ ${S("BEMÖT","REBUT")}</button><button class="btn sm wh" onclick="__nrb()">${S("LÅT RÄTTEN AVGÖRA","LET THE COURT DECIDE")}</button></div>`)},900)}
+function reactPhase(done){const roles=["P","D"];let busyCheck=0;
+ const next=()=>{if(!roles.length){render();return done()}const r=roles.shift(),T=objTargets(G,r);
+  if(!T.length||!hasKw(G,r,"obj"))return next();
+  if(!isHuman(r)){const t=aiObject(G,r);return t?objection(r,t,next):next()}
+  window.__obj=k=>{closeModal();objection(r,T[k],next)};window.__skip=()=>{closeModal();next()};
+  modal(`<span class="badge">✋ ${S("Invändning?","Objection?")}${G.mode==="hot"?" · "+seatName(seatOf(G,r)):""}</span>
+  <div class="mt" style="font-size:24px">${S("Tryck på kortet du invänder mot","Tap the card you object to")}</div>
+  <div class="tgtrow">${T.map((t,k)=>`<div class="tgt ${UI.tut&&!UI.seen.obj&&k===0?"hl":""}" onclick="__obj(${k})"><div class="a">${artOf(t.x.c)}</div>${tx(t.x.c.name)}<br><span style="color:#555">${tx(REKN[t.l])}</span> <span class="pw">${t.x.pow}</span></div>`).join("")}</div>
+  ${UI.tut&&!UI.seen.obj?(UI.seen.obj=1,tip(S("Motparten har lagt kort. Du har en <b>Invändning</b> på handen! Tryck på ett kort och hitta felet i pusslet. Lyckas du bifaller domaren och kortet stryks.","The other side has played cards. You have an <b>Objection</b> in hand! Tap a card and find the flaw in the puzzle. Get it right and the judge sustains it: the card is struck."))):`<div class="mp" style="font-size:12px">${S("Klara pusslet så bifaller rätten. Motparten kan bemöta med Genmäle.","Solve the puzzle and the court sustains it. The other side may rebut.")}</div>`}
+  <button class="btn sm wh" onclick="__skip()">${S("AVSTÅ","PASS")}</button>`)};
+ UI.busy=true;render();next()}
+/* lunch + shift */
+function lunch(){try{setTrack("puzzle")}catch(e){}sfxp("scene");
+ modal(`<span class="badge">${S("Ajournering","Adjournment")}</span>${img(EI.lunch,"face")}<div class="mt">${S("LUNCHPAUS","LUNCH BREAK")}</div>
+ <div class="mp">${S("Vi återupptar 13.15. Vem sitter på vilken stol då?","We resume at 1:15. Who'll be in which chair?")}</div>
+ <button class="btn" onclick="resume()">${S("13.15: ÅTER TILL SAL ","1:15 PM: BACK TO ROOM ")+C.room}</button>`)}
+window.resume=()=>{if(G.resumed)return;G.resumed=1;dingdong();const sh=Math.random()<.5;if(sh)doSwap(G);try{setTrack("palace")}catch(e){}
+ const a=G.seat.A;modal(`<span class="badge">📢 ${S("Upprop","The call")}</span>${sayBox(CF.notary,S("Tingsnotarien","The court clerk"),S(`Mål ${C.code} återupptas. Parterna kallas till sal ${C.room}.`,`Case ${C.code} resumes. The parties are called to room ${C.room}.`))}
+ <div class="mt" style="color:${sh?"var(--blue)":"var(--red)"};font-size:40px">${sh?"🔄 COURT SHIFT!":S("SAMMA STOL","SAME CHAIR")}</div>
+ <div class="mp">${G.mode==="hot"?(sh?S("Ni byter sida! Spelare 1 tar över försvaret och Spelare 2 åtalet, med bord och hand.","You switch sides! Player 1 takes the defense and Player 2 the prosecution, board and hand included."):S("Ni behåller era sidor.","You keep your sides.")):
+  (sh?S(`Du kliver in som <b>${ROLEN[a]()}</b>. Bordet du byggde ska nu ${a==="D"?"rivas":"försvaras"}.`,`You step in as <b>${ROLEN[a]()}</b>. The board you built must now be ${a==="D"?"torn down":"defended"}.`):S(`Du fortsätter som <b>${ROLEN[a]()}</b>.`,`You remain <b>${ROLEN[a]()}</b>.`))}</div>
+ <button class="btn" onclick="closeModal();endTurn(G);startTurn()">${S("FORTSÄTT","CONTINUE")}</button>`);
+ if(sh){$("app").animate([{transform:"none"},{transform:"rotateY(90deg) scale(.85)"},{transform:"none"}],{duration:900})}};
+/* closing */
+function closingPhase(){const seats=humanSeats();const ask=()=>{if(!seats.length){if(G.mode==="ai")aiClose(G,G.seat.B);const ev=closing(G);G.lastRev=7;render();
+  const msg=[S(`🎙️ Åklagaren pläderar om ${tx(REKN[G.close.P])} (+3).`,`🎙️ The prosecution argues ${tx(REKN[G.close.P])} (+3).`),S(`🎙️ Försvaret pläderar om ${tx(REKN[G.close.D])} (+3).`,`🎙️ The defense argues ${tx(REKN[G.close.D])} (+3).`)];
+  $("ticker").innerHTML=`<div>${msg[0]}<br>${msg[1]}</div>`;setTimeout(()=>{$("ticker").innerHTML="";deliberate()},2400);return}
+  const seat=seats.shift(),r=G.seat[seat];const go=()=>modal(`<span class="badge">🎙️ ${S("Slutanförande","Closing")} · ${seatName(seat)}</span><div class="mt" style="font-size:24px">${r==="P"?S("Vilket rekvisit vill du styrka?","Which element will you prove?"):S("Vilket rekvisit vill du så tvivel om?","Which element will you doubt?")}</div>
+   ${[0,1,2].map(l=>`<div class="choice" onclick="G.close['${r}']=${l};closeModal();(${"window.__ask"})()"><div><b>${tx(REKN[l])}: <span style="color:#C81E1E">${power(G,"P",l)}</span> – <span style="color:#0b5fd0">${power(G,"D",l)}</span></b><span>${tx(C.rek[l])}</span></div></div>`).join("")}
+   <div class="mp" style="font-size:12px">${S("+3 på den banan för din sida. Motparten väljer i hemlighet.","+3 on that lane for your side. The other side chooses in secret.")}</div>`);
+  if(G.mode==="hot")showCurtain(seat,go);else go()};window.__ask=ask;UI.busy=true;ask()}
+window.deliberate=()=>{if(G.delib)return;G.delib=1;closeModal();const B=$("black"),J=[[CF.kaffe,S("Nämndeman Kaffe","Lay judge Coffee"),S("Kan vi ta en bulle först?","Can we have a bun first?")],[CF.noggrann,S("Nämndeman Noggrann","Lay judge Thorough"),S("Jag har räknat. Vi går igenom banorna en i taget.","I've done the sums. Let's go lane by lane.")],[CF.nyfiken,S("Nämndeman Nyfiken","Lay judge Curious"),S("Men vad hände egentligen?","But what really happened?")]];let n=0;
+ B.innerHTML=`<div>${img(EI.door,"face")}<div style="margin-top:10px">${S("RÄTTEN ÖVERLÄGGER...","THE COURT DELIBERATES...")}</div><div id="dq" style="font-family:var(--body);font-size:14px;font-weight:600;margin-top:12px;display:flex;gap:10px;align-items:center;justify-content:center;text-align:left;min-height:60px"></div></div>`;B.classList.add("show");
+ const step=()=>{if(n<2){const q=J[(n++)+(Math.random()<.5?1:0)];$("dq").innerHTML=img(q[0])+`<div><b style="color:var(--gold)">${q[1]}</b><br>${q[2]}</div>`;setTimeout(step,1400)}else{B.classList.remove("show");deliver()}};step()};
+function deliver(){if(Math.random()<.55){stamp(S("DOMEN AVKUNNAS","JUDGMENT"),"");setTimeout(judgment,900);return}
+ const d=new Date();d.setDate(d.getDate()+14);const ds=d.toLocaleDateString(LANG==="sv"?"sv-SE":"en-GB",{day:"numeric",month:"long"});
+ modal(`<span class="badge">${S("Domen meddelas senare","Judgment reserved")}</span>${sayBox(CF.judge,S("Rådman Sven Uggla","Judge Sven Uggla"),S(`Domen meddelas den ${ds} klockan 11.00.`,`Judgment will be delivered on ${ds} at 11 am.`))}<button class="btn" onclick="twoWeeks()">${S("VÄNTA...","WAIT...")}</button>`)}
+window.twoWeeks=()=>{if(G.tw)return;G.tw=1;closeModal();const B=$("black");B.innerHTML=S("TVÅ VECKOR SENARE...","TWO WEEKS LATER...");B.classList.add("show");setTimeout(()=>{B.classList.remove("show");judgment()},2000)};
+function judgment(){if(G.over)return;G.over=true;const v=verdictOf(G),guilty=v.guilty;setFace(guilty?"D":"P","Sad",60000);setFace(guilty?"P":"D","Obj",60000);try{setTrack("puzzle")}catch(e){}
+ const winRole=guilty?"P":"D",res={};["A","B"].forEach(s=>{const r=G.seat[s],st=G.stats[s],lanesWon=v.lanes.filter(x=>x===r).length,win=r===winRole;
+  res[s]={r,win,pts:lanesWon*100+st.strikes*20+st.obj*30+(win?200:0),stars:Math.min(3,(win?1:0)+(lanesWon>=2?1:0)+(st.strikes+st.obj>=3?1:0)),lanesWon,st}});
+ const me=res.A;if(G.mode==="ai"){save.xp=(save.xp||0)+me.pts;const p=save[C.id]||{stars:0};save[C.id]={stars:Math.max(p.stars,me.stars)};save.tut=1;store()}
+ sfxp(G.mode==="ai"?(me.win?"win":"cold"):"win");
+ const rows=[0,1,2].map(l=>`<li><b>${tx(REKN[l])}</b> (${tx(C.rek[l])}): ${v.lanes[l]==="P"?S("styrkt utom rimligt tvivel","proven beyond reasonable doubt"):S("<u>inte styrkt</u>, det finns rimligt tvivel","<u>not proven</u>, there is reasonable doubt")} (${power(G,"P",l)}–${power(G,"D",l)}).</li>`).join("");
+ const stood=[0,1,2].flatMap(l=>G.lanes[l].P.filter(x=>!x.struck&&x.c.n!==undefined).map(x=>tx(x.c.name).toLowerCase())),fell=[0,1,2].flatMap(l=>G.lanes[l].P.filter(x=>x.struck&&x.c.n!==undefined).map(x=>tx(x.c.name).toLowerCase()));
+ const dom=`<div class="doc"><div class="dh"><b>${S("SOLSTADS TINGSRÄTT","SOLSTAD DISTRICT COURT")}</b><span>${S("DOM","JUDGMENT")}<br>${C.code}</span></div>
+ <div class="ds">${S("PARTER","PARTIES")}</div><div><b>${S("Åklagare","Prosecutor")}:</b> ${ROLEN.P()}<br><b>${S("Tilltalad","Accused")}:</b> ${who(C)}<br><b>${S("Offentlig försvarare","Defense counsel")}:</b> ${ROLEN.D()}</div>
+ <div class="ds">${S("DOMSLUT","OPERATIVE PART")}</div><div>${guilty?S(`${who(C)} döms för ${C.crime}.<br><b>Påföljd:</b> ${C.pen[0]}.`,`${who(C)} is convicted of ${C.crimeEn}.<br><b>Sanction:</b> ${C.pen[1]}.`)+(C.dmg?`<br><b>${S("Skadestånd","Damages")}:</b> ${tx(C.dmg)}`:""):S(`Åtalet ogillas. ${who(C)} frikänns.`,`The charge is dismissed. ${who(C)} is acquitted.`)}</div>
+ <div class="ds">${S("DOMSKÄL","REASONS")}</div><div>${S("Bevisning som bestått","Evidence that stood")}: ${stood.join(", ")||S("ingen","none")}.${fell.length?" "+S("Bevisning rätten inte fäst avseende vid","Evidence disregarded")+": "+fell.join(", ")+".":""}<br>${S("Varje del av gärningsbeskrivningen måste vara styrkt:","Every element of the charge must be proven:")}<ol>${rows}</ol>${guilty?S("Åtalet är styrkt.","The charge is proven."):S("Åtalet är inte styrkt i alla delar och ska ogillas.","The charge is not proven in every part and must be dismissed.")}</div>
+ <div class="ds">${S("HUR MAN ÖVERKLAGAR","HOW TO APPEAL")}</div><div style="font-size:11px">${S("Överklagande ställs till hovrätten men ges in till tingsrätten senast tre veckor från i dag.","An appeal is addressed to the Court of Appeal but filed with the district court within three weeks.")}</div>
+ <div class="dsig">${S("På tingsrättens vägnar","For the district court")}<br><span>Sven Uggla</span><br>${S("Rådman","Judge")}</div><div class="dstamp ${guilty?"g":"n"}">${guilty?S("FÄLLD","GUILTY"):S("FRIKÄND","ACQUITTED")}</div></div>`;
+ const card=s=>{const r=res[s];return `<div class="stats"><b>${seatName(s)}</b> · ${r.r==="P"?S("åklagare","prosecutor"):S("försvar","defense")} ${r.win?"🏆":""}<br>${"⭐".repeat(r.stars)}${"☆".repeat(3-r.stars)}<br>${S("Banor vunna","Lanes won")}: ${r.lanesWon} · ${S("Fällda bevis","Strikes")}: ${r.st.strikes} · ${S("Invändningar","Objections")}: ${r.st.obj}<br><b>${r.pts} ${G.mode==="ai"?"XP":S("poäng","points")}</b></div>`};
+ const head=G.mode==="ai"?`<div class="mt" style="color:${me.win?"#0B7A55":"var(--red)"}">${me.win?S("DU VANN MÅLET! 🏆","YOU WON THE CASE! 🏆"):S("MOTPARTEN VANN","THE OTHER SIDE WON")}</div>`:`<div class="mt">${res.A.win?seatName("A"):seatName("B")} ${S("vinner!","wins!")} 🏆</div>`;
+ const r0=rankOf((save.xp||0)-(G.mode==="ai"?me.pts:0)),r1=rankOf(save.xp||0),up=G.mode==="ai"&&r1[0]!==r0[0];
+ window.__dom=dom;const short=`<span class="badge">${S("Tingsrättens dom","The verdict")}</span><div class="vstamp ${guilty?"g":"n"}">${guilty?S("FÄLLD!","GUILTY!"):S("FRIKÄND!","ACQUITTED!")}</div>
+ <div class="vrows">${[0,1,2].map(l=>`<div><span>${tx(REKN[l])}</span><span class="${v.lanes[l]==="P"?"ok":"no"}">${v.lanes[l]==="P"?S("✔ styrkt","✔ proven"):S("✖ tvivel","✖ doubt")} ${power(G,"P",l)}–${power(G,"D",l)}</span></div>`).join("")}</div>
+ ${head}${card("A")}${G.mode==="hot"?card("B"):""}${up?`<div class="mt" style="font-size:22px">🎓 ${S("Befordrad till","Promoted to")} ${S(r1[1],r1[2])}!</div>`:""}
+ <div class="row"><button class="btn" onclick="callCase()">${S("SPELA IGEN","PLAY AGAIN")}</button><button class="btn sm wh" onclick="home()">${S("MENY","MENU")}</button></div><button class="link" onclick="readDom()">📜 ${S("Läs hela domen","Read the full judgment")}</button>`;
+ window.__short=short;modal(short)}
+window.readDom=()=>modal(`${window.__dom}${note(verdictOf(G).guilty?"rek":"doubt")}<button class="btn" onclick="modal(window.__short)">${S("TILLBAKA","BACK")}</button>`);
+/* coach */
+function coach(text,sel,cb,forced){const c=$("coach");c.classList.toggle("forced",!!forced);$("coachImg").src=ARTHUR;$("coachT").textContent=text;const el=sel&&document.querySelector(sel),ar=$("app").getBoundingClientRect(),r=el?el.getBoundingClientRect():null;
+ const below=r&&(r.top-ar.top)<ar.height*.35;c.style.top=below?(r.bottom-ar.top+8)+"px":"auto";c.style.bottom=below?"auto":(r?Math.max(8,ar.bottom-r.top+10):190)+"px";c.classList.add("show");c._cb=cb;$("coachOk").onclick=()=>hideCoach()}
+function hideCoach(silent){const c=$("coach");if(!c.classList.contains("show"))return;c.classList.remove("show");const cb=c._cb;c._cb=null;if(cb&&!silent)cb()}
+function tutor(){if(!UI.tut)return;const h=G.hand[myRole()];
+ if(G.turn===1&&!UI.seen.t1){UI.seen.t1=1;UI.ts="card";const gi=h.findIndex(c=>c.cost===1&&!isReact(c));if(gi>0)h.unshift(h.splice(gi,1)[0]);UI.glow=gi>=0?0:-1;render();
+  return coach(S("Välkommen till rätten! Det här är dina kort. Tryck på kortet som lyser. Siffran uppe till vänster är vad det kostar i minuter.","Welcome to court! These are your cards. Tap the glowing card. The number top-left is its cost in minutes."),"#hand",null,true)}
+ if(G.turn===2&&!UI.seen.t2){UI.seen.t2=1;return coach(S("Nu har du 2 minuter. Varje runda får du mer tid. Bevis är låsta till sitt rekvisit (står längst ner på kortet).","Now you have 2 minutes, more each round. Evidence is locked to its element (shown at the bottom of the card)."),"#hand")}
+ const ai=h.findIndex(c=>c.id==="arthur");if(ai>=0&&!UI.seen.ar){UI.seen.ar=1;h.unshift(h.splice(ai,1)[0]);UI.glow=0;render();return coach(myRole()==="P"?S("Det är ju jag! Kalla in mig som vittne. Mitt vittnesmål kan inte fällas av försvarets trovärdighetskort.","Why, that's me! Call me as a witness. My testimony can't be broken by the defense's credibility cards."):S("Det är ju jag! Jag har hittat en lucka i utredningen. Lägg mig där åklagaren är starkast så fäller jag deras bästa kort.","Why, that's me! I found a gap in the investigation. Play me where the prosecution is strongest and I'll strike their best card."),"#hand",()=>{UI.glow=-1;render()})}
+ let v=h.findIndex(c=>c.kw==="vand");if(v>=0&&!UI.seen.v){UI.seen.v=1;h.unshift(h.splice(v,1)[0]);v=0;UI.glow=v;render();return coach(S("Du drog <Vänd på steken>! Lägg det på en bana där motparten har ett starkt kort. Det kortet byter sida och hjälper dig i stället.","You drew <Turn the tables>! Play it on a lane where the other side has a strong card. That card switches sides and helps you instead."),"#hand",()=>{UI.glow=-1;render()})}}
+window.tutorial=()=>{save.tut=0;store();UI.mode="ai";C=CASES[0];callCase()};
+/* misc */
+$("homeBtn").onclick=()=>{if(!G||G.over||confirm(S("Avbryta målet?","Abandon the case?")))home()};
+$("gbBtn").onclick=()=>{if(C)modal(`<span class="badge">📜</span>${indictment()}<button class="btn" onclick="closeModal()">${S("TILLBAKA","BACK")}</button>`)};
+$("noteBtn").onclick=()=>{const k=pick(Object.keys(NOTES).filter(k=>k!=="penguin"||(C&&C.id==="zoo")));modal(`<span class="badge">📖 ${S("Juristens fotnot","Lawyer's note")}</span>${note(k)}<button class="btn" onclick="${G&&!G.over?"closeModal()":"home()"}">${S("TILLBAKA","BACK")}</button>`)};
+$("musBtn").onclick=()=>{save.music=save.music===false;store();if(save.music===false){try{stopMusic()}catch(e){}$("musBtn").textContent="🔇"}else{try{startMusic()}catch(e){}$("musBtn").textContent="🔊"}};
+if(save.music===false)$("musBtn").textContent="🔇";
+$("judgeImg").src=CF.judge;document.documentElement.lang=LANG;
+(function intro(){const sp=$("splash");$("tcP").src=CF.granit;$("tcD").src=CF.filur;$("tlP").textContent=S("ÅKLAGARE","PROSECUTOR");$("tlD").textContent=S("FÖRSVARARE","DEFENSE");$("tpres").textContent="BRIDGEMAN ENTERTAINMENT "+S("PRESENTERAR","PRESENTS");$("tsub").textContent=S("Ett mål. Två sidor. Du vet aldrig vilken.","One case. Two sides. You never know which.");$("taptxt").textContent=S("Tryck för att börja","Tap to start");
+ C=CASES[0];$("accImg").src=PORTRAITS[C.id];
+ if(matchMedia("(prefers-reduced-motion:reduce)").matches){sp.classList.add("off");home();return}
+ $("nightsky").innerHTML=Array.from({length:44},()=>`<i class="star" style="left:${Math.random()*100}%;top:${Math.random()*100}%;animation-delay:${-Math.random()*2}s"></i>`).join("");
+ $("st1").innerHTML="BRIDGEMAN".split("").map((l,i)=>`<span style="animation-delay:${1.2+i*.08}s">${l}</span>`).join("");
+ try{sfx.dawn()}catch(e){}let ph=1;const next=()=>{if(ph===1){ph=2;clearTimeout(t);sp.classList.add("p2");try{sfx.title()}catch(e){}}else if(ph===2){ph=3;sp.classList.add("off");try{startMusic()}catch(e){}home()}};const t=setTimeout(next,5800);sp.onclick=next})();
+</script>
+</body>
+</html>

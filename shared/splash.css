@@ -1,0 +1,44 @@
+.nightsky{position:absolute;inset:0 0 30% 0;animation:fadeout 2.2s ease-in .8s forwards}
+.star{position:absolute;width:3px;height:3px;border-radius:50%;background:#fff;animation:twinkle 1s ease-in-out infinite alternate}
+.glow{position:absolute;inset:0;background:linear-gradient(to top,#FF7A3D 8%,#FFB03B 26%,#FFE08A 44%,#9AD7FF 72%,#2F7BFF 100%);opacity:0;animation:glow 3.4s ease-out .3s forwards}
+.cloud{position:absolute;height:26px;border-radius:999px;background:rgba(255,255,255,.88);opacity:0;animation:glow 2s ease-out 1.8s forwards,drift 14s ease-in-out infinite alternate}
+.cloud::before{content:"";position:absolute;left:22%;bottom:40%;width:46%;height:120%;border-radius:999px;background:inherit}
+.c1{top:42%;left:6%;width:112px}
+.c2{top:52%;right:5%;width:84px;animation-delay:2.2s,0s}
+.sunw{position:absolute;left:50%;bottom:12%;width:0;height:0;transform:translateY(120px);animation:rise2 3.4s cubic-bezier(.2,.7,.3,1) .3s forwards}
+.disc{position:absolute;left:-85px;top:-85px;width:170px;height:170px;border-radius:50%;background:radial-gradient(circle at 40% 35%,#FFF6C2,var(--sun) 62%);border:4px solid var(--ink);box-shadow:0 0 70px 26px rgba(255,220,100,.65)}
+.rays{position:absolute;left:-100vmax;top:-100vmax;width:200vmax;height:200vmax;background:repeating-conic-gradient(rgba(255,255,255,.22) 0 9deg,transparent 9deg 18deg);-webkit-mask:radial-gradient(circle,#000 0,transparent 46%);mask:radial-gradient(circle,#000 0,transparent 46%);opacity:0;animation:spin 70s linear infinite,glow 2s ease-out 1.6s forwards;pointer-events:none}
+.ridge{position:absolute;bottom:0;background:#1B2F6E;border-radius:50% 50% 0 0/100% 100% 0 0}
+.r1{left:-30%;width:70%;height:24%}
+.r2{right:-34%;width:74%;height:21%;background:#22398A}
+.bridge{position:absolute;left:50%;bottom:11%;width:400px;height:160px;margin-left:-200px}
+.bank{position:absolute;bottom:11%;height:64px;width:calc(50% - 197px);background:var(--ink);box-shadow:inset 0 3px 0 #33488F}
+.bl{left:0}
+.br{right:0}
+.river{position:absolute;left:0;right:0;bottom:0;height:13%;background:linear-gradient(#0E1A3A,#14213D);overflow:hidden}
+.river::before{content:"";position:absolute;left:50%;top:0;width:280px;height:100%;margin-left:-140px;background:repeating-linear-gradient(rgba(255,210,63,.8) 0 3px,transparent 3px 9px);clip-path:polygon(40% 0,60% 0,100% 100%,0 100%);-webkit-mask:linear-gradient(#000 25%,rgba(0,0,0,.45));mask:linear-gradient(#000 25%,rgba(0,0,0,.45));opacity:0;animation:glow 2s ease-out 2s forwards}
+.ridge.front{left:-10%;right:-10%;height:13%;background:var(--ink);border-radius:50% 50% 0 0/36px 36px 0 0}
+.studio{position:absolute;left:0;right:0;top:12%;text-align:center;padding:0 12px}
+.st1{font-family:var(--display);font-size:clamp(46px,14vw,72px);line-height:1;letter-spacing:3px;color:var(--sun);-webkit-text-stroke:2px var(--ink);text-shadow:4px 4px 0 var(--ink)}
+.st1 span{display:inline-block;opacity:0;animation:letter .5s cubic-bezier(.2,1.6,.4,1) forwards}
+.st2{font-family:var(--display);font-size:clamp(22px,6.6vw,34px);letter-spacing:6px;color:#fff;text-shadow:2px 2px 0 var(--ink);margin-top:4px;opacity:0;animation:fadeup .8s ease-out 2.3s forwards}
+.st3::before,.st3::after{content:"";display:inline-block;vertical-align:middle;width:34px;height:2px;background:#fff;margin:0 10px 0 4px;box-shadow:1px 1px 0 var(--ink)}
+.st3{margin-top:16px;font-size:14px;font-weight:600;letter-spacing:7px;text-transform:uppercase;color:#fff;text-shadow:1px 1px 0 var(--ink);opacity:0;animation:fadeup .8s ease-out 3s forwards}
+.titlecard>*{position:relative}
+.titlecard::before{content:"";position:absolute;left:50%;top:42%;width:200vmax;height:200vmax;margin:-100vmax;background:repeating-conic-gradient(rgba(255,255,255,.14) 0 9deg,transparent 9deg 18deg);-webkit-mask:radial-gradient(circle,#000 0,transparent 40%);mask:radial-gradient(circle,#000 0,transparent 40%);animation:spin 70s linear infinite;pointer-events:none}
+@keyframes rise2{to{transform:translateY(-170px)}}
+@keyframes fadeout{to{opacity:0}}
+@keyframes twinkle{to{opacity:.25}}
+@keyframes drift{to{transform:translateX(26px)}}
+@keyframes spin{to{transform:rotate(360deg)}}
+@keyframes letter{from{opacity:0;transform:translateY(26px) scale(.5)}to{opacity:1;transform:none}}
+
+@keyframes glow{to{opacity:1}}
+@keyframes rise{to{transform:translateY(-70px)}}
+@keyframes fadeup{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
+@keyframes blink{50%{opacity:.35}}
+
+@keyframes pop{0%{transform:scale(.4)}70%{transform:scale(1.15)}100%{transform:scale(1)}}
+@keyframes pulse{50%{transform:scale(1.12)}}
+@keyframes bob{50%{transform:translateY(-7px) rotate(-2deg)}}
+@keyframes fallc{to{transform:translateY(110vh) rotate(540deg)}}
