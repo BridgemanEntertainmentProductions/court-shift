@@ -4,7 +4,7 @@
 Made for **GitHub Game Off 2026** (theme: **SHIFT**) by [Bridgeman Entertainment](https://bridgemanentertainment.itch.io/).
 
 ▶ **Play:** https://bridgemanentertainment.itch.io/court-shift
-▶ **Play on GitHub Pages:** https://<your-user>.github.io/court-shift/
+▶ **Play on GitHub Pages:** https://bridgemanentertainmentproductions.github.io/court-shift/
 
 ![Court Shift](docs/cover.png)
 
