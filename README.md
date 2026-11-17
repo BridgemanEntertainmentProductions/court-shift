@@ -6,7 +6,12 @@ Made for **GitHub Game Off 2026** (theme: **SHIFT**) by [Bridgeman Entertainment
 ▶ **Play:** https://bridgemanentertainment.itch.io/court-shift
 ▶ **Play on GitHub Pages:** https://bridgemanentertainmentproductions.github.io/court-shift/
 
-![Court Shift](docs/cover.png)
+![Court Shift](docs/banner.png)
+
+| | |
+|---|---|
+| ![Courtroom](docs/s2_court.png) | ![Puzzle](docs/s3_puzzle.png) |
+| ![Objection](docs/s4_objection.png) | ![Verdict](docs/s5_verdict.png) |
 
 ## The game
 
