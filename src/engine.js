@@ -83,7 +83,7 @@ function reveal(g){const ev=[],L=g.lanes,T=g.turn;
   if(c.kw==="osaker")pow+=Math.round(RK()*4-2);
   if(c.kw==="kedja"&&L[p.l][s].some(x=>!x.struck))pow+=2;
   if(e==="coffee"&&c.ty==="TEK")pow-=2;if(e==="sleep"&&c.ty==="VIT")pow-=2;if(e==="paper"&&c.ty==="OMS")pow+=2;if(e==="spot")pow+=1;
-  if(p.q===0)pow=Math.round(pow/2);
+  if(p.q===0)pow=Math.round(pow/2);else if(p.q>1)pow=Math.max(pow+1,Math.round(pow*p.q));else if(p.q<1)pow=Math.max(1,Math.round(pow*p.q));
   pow=Math.max(0,pow);const item={c,pow,base:pow,struck:false,turn:T,s};L[p.l][s].push(item);ev.push({t:"play",s,l:p.l,c,pow})}));
  /* on-reveal effects: prosecution boosts first, then defense attacks */
  ["P","D"].forEach(s=>g.pend[s].forEach(p=>{const c=p.c;if(cancelled.has(c.uid))return;const lane=L[p.l],mine=lane[s].filter(x=>!x.struck),theirs=lane[opp(s)].filter(x=>!x.struck);

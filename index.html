@@ -188,7 +188,7 @@ body{background:#120a06;display:flex;justify-content:center}
 .grid4.small .gc{font-size:22px;padding:3px 0;cursor:default}
 .gc.on{background:var(--gold)}
 @keyframes drop{from{transform:translateY(-160px) rotate(-20deg);opacity:0}to{transform:none;opacity:1}}
-.pzr{font-family:var(--display);font-size:30px;letter-spacing:1px}.pzr.ok{color:#0B7A55}.pzr.bad{color:var(--red)}
+.pzr{font-family:var(--display);font-size:30px;letter-spacing:1px}.pzr.ok{color:#0B7A55}.pzr.bad{color:var(--red)}.pzr.gold{color:#C98A00;text-shadow:0 0 12px rgba(255,200,0,.6)}.pzr.mid{color:#B85F00}.pzr.ok.mid{color:#3C7A2A}
 .vstamp{font-family:var(--display);font-size:54px;letter-spacing:2px;border:6px solid;border-radius:16px;padding:4px 18px;transform:rotate(-6deg);align-self:center;animation:popin .4s}
 .vstamp.g{color:#C81E1E;border-color:#C81E1E}.vstamp.n{color:#0b5fd0;border-color:#0b5fd0}
 .vrows{display:flex;flex-direction:column;gap:5px}.vrows div{display:flex;justify-content:space-between;align-items:center;background:#fff;border:3px solid var(--ink);border-radius:10px;padding:5px 9px;font-weight:800;font-size:14px}
@@ -647,7 +647,7 @@ function reveal(g){const ev=[],L=g.lanes,T=g.turn;
   if(c.kw==="osaker")pow+=Math.round(RK()*4-2);
   if(c.kw==="kedja"&&L[p.l][s].some(x=>!x.struck))pow+=2;
   if(e==="coffee"&&c.ty==="TEK")pow-=2;if(e==="sleep"&&c.ty==="VIT")pow-=2;if(e==="paper"&&c.ty==="OMS")pow+=2;if(e==="spot")pow+=1;
-  if(p.q===0)pow=Math.round(pow/2);
+  if(p.q===0)pow=Math.round(pow/2);else if(p.q>1)pow=Math.max(pow+1,Math.round(pow*p.q));else if(p.q<1)pow=Math.max(1,Math.round(pow*p.q));
   pow=Math.max(0,pow);const item={c,pow,base:pow,struck:false,turn:T,s};L[p.l][s].push(item);ev.push({t:"play",s,l:p.l,c,pow})}));
  /* on-reveal effects: prosecution boosts first, then defense attacks */
  ["P","D"].forEach(s=>g.pend[s].forEach(p=>{const c=p.c;if(cancelled.has(c.uid))return;const lane=L[p.l],mine=lane[s].filter(x=>!x.struck),theirs=lane[opp(s)].filter(x=>!x.struck);
@@ -768,7 +768,7 @@ function chipHTML(x,s,extra){const c=x.c,t=TYI[c.ty]||TYI.GEN;return `<div class
 /* ===== RENDER ===== */
 function seatHTML(img,name,role,cls){return `<div class="seat ${cls||""}"><img src="${img}" alt=""><b>${name}</b><i>${role}</i></div>`}
 function buildCourt(){const J=S("Nämndeman","Lay judge");
- $("bench").innerHTML=seatHTML(CF.notary,S("Notarien","The clerk"),S("Tingsnotarie","Court clerk"))+seatHTML(CF.nyfiken,"Nyfiken",J)+seatHTML(CF.judge,"Sven Uggla",S("Rådman · ordförande","Judge · presiding"),"j")+seatHTML(CF.kaffe,"Kaffe",J)+seatHTML(CF.noggrann,"Noggrann",J);
+ $("bench").innerHTML=seatHTML(CF.kaffe,"Kaffe",J)+seatHTML(CF.nyfiken,"Nyfiken",J)+seatHTML(CF.judge,"Sven Uggla",S("Rådman · ordförande","Judge · presiding"),"j")+seatHTML(CF.notary,S("Notarien","The clerk"),S("Tingsnotarie","Court clerk"))+seatHTML(CF.noggrann,"Noggrann",J);
  $("deskP").innerHTML=`<span class="you" id="youP"></span><div class="big"><img id="faceP" src="${CF.granit}" alt=""></div><div class="nm">Alexander Granit</div><div class="rl">${S("Kammaråklagare","Senior prosecutor")}</div><div class="table"></div>`;
  $("deskD").innerHTML=`<span class="you" id="youD"></span><div class="big"><img id="faceD" src="${CF.filur}" alt=""></div><div class="nm">Daniel Filur</div><div class="rl">${S("Advokat · offentlig försvarare","Defense counsel")}</div><div class="acc"><img src="${PORTRAITS[C.id]}" alt=""><span>${who(C)}<br><span style="opacity:.75">${S("Tilltalad","Defendant")}</span></span></div><div class="table"></div>`}
 function syncDesks(){if(!G||!$("youP"))return;["P","D"].forEach(r=>{const el=$("you"+r),sd=seatOf(G,r);if(!el)return;
@@ -823,8 +823,10 @@ function puzzle(c,cb,lbl){const kind=pzKind(c),box=$("pzb"),T={word:11000,timeli
  $("ticker").innerHTML="";
  const head=(title,sub)=>`<div class="pzh"><div class="art">${artOf(c)}</div><div><b>${title}</b><span>${tx(c.name)} · ${sub}</span></div></div><div class="pzt"><i id="pzbar"></i></div>`;
  const finish=ok=>{if(done)return;done=true;cancelAnimationFrame(raf);sfxp(ok?"ok":"bad");
-  box.insertAdjacentHTML("beforeend",`<div class="pzr ${ok?"ok":"bad"}">${lbl?lbl[ok?0:1]:ok?S("ÖVERTYGANDE! Full styrka","CONVINCING! Full strength"):S("SVAJIGT... halv styrka","SHAKY... half strength")}</div>`);
-  setTimeout(()=>{$("pz").classList.remove("show");PZ=null;cb(ok?1:0)},850)};
+  const f=(performance.now()-start)/T,q=!ok?0:f<.3?1.25:f<.55?1:f<.8?.8:.6;
+  const TL={1.25:[S("BLIXTSNABBT! Extra styrka","LIGHTNING FAST! Extra strength"),"ok gold"],1:[S("ÖVERTYGANDE! Full styrka","CONVINCING! Full strength"),"ok"],.8:[S("STABILT. Något svagare","SOLID. Slightly weaker"),"ok mid"],.6:[S("LÅNGSAMT... svagare","SLOW... weaker"),"mid"],0:[S("SVAJIGT... halv styrka, ingen effekt","SHAKY... half strength, no effect"),"bad"]}[q];
+  box.insertAdjacentHTML("beforeend",`<div class="pzr ${lbl?(ok?"ok":"bad"):TL[1]}">${lbl?lbl[ok?0:1]:TL[0]}</div>`);
+  setTimeout(()=>{$("pz").classList.remove("show");PZ=null;cb(q)},lbl?850:1100)};
  PZ={answer:ok=>finish(ok),kind};
  const shake=el=>{el.animate([{transform:"translateX(-5px)"},{transform:"translateX(5px)"},{transform:"none"}],{duration:200});start-=1200;sfxp("bad")};
  const tick=()=>{const f=Math.min(1,1-(performance.now()-start)/T),b=$("pzbar");if(b)b.style.transform=`scaleX(${Math.max(0,f)})`;if(f<=0)return finish(false);raf=requestAnimationFrame(tick)};
@@ -911,7 +913,7 @@ window.begin=()=>{try{startMusic();setTrack("palace")}catch(e){}G=newGame(C,UI.m
  setTimeout(()=>modal(`<span class="badge">${S("Huvudförhandling","Main hearing")}</span>
  ${sayBox(CF.judge,S("Rådman Sven Uggla","Judge Sven Uggla"),S(`Förhandlingen är öppnad. ${who(C)}, vad säger du?`,`The hearing is open. ${who(C)}, how do you plead?`))}
  ${sayBox(PORTRAITS[C.id],who(C),S("Jag förnekar brott!","Not guilty!"))}
- <div class="mp" style="font-size:12.5px">⚡ ${S("Varje kort du lägger måste du <b>bevisa</b> med ett snabbt pussel. Snabb och rätt = full styrka.","Every card you play must be <b>proven</b> with a quick puzzle. Fast and right = full strength.")}</div>
+ <div class="mp" style="font-size:12.5px">⚡ ${S("Varje kort du lägger måste du <b>bevisa</b> med ett snabbt pussel. Ju snabbare, desto starkare: blixtsnabbt ger extra styrka, långsamt ger mindre och fel ger halv.","Every card you play must be <b>proven</b> with a quick puzzle. The faster, the stronger: lightning fast gives extra strength, slow gives less and wrong gives half.")}</div>
  <div class="mp" style="font-size:12.5px">${G.mode==="hot"?S("Spelare 1 är åklagare. Spelare 2 är försvar.","Player 1 is the prosecution. Player 2 is the defense."):S("Du börjar som <b style='color:var(--red)'>åklagare</b>.","You start as the <b style='color:var(--red)'>prosecutor</b>.")}</div>
  <button class="btn red" onclick="closeModal();startTurn()">${S("BEVISNINGEN BÖRJAR","BEGIN THE EVIDENCE")}</button>`),900)};
 function startTurn(){UI.queue=[...humanSeats()];setTimeout(()=>{if(G)G.lastRev=-1},700);const e=G.lanes.find(l=>l.ev);if(e){const ev=EVENTS2.find(x=>x[0]===e.ev);say(`<b style="color:var(--ink)">${tx(ev[1])}</b> ${S("på","on")} ${tx(REKN[G.lanes.indexOf(e)])}: ${tx(ev[2])}`)}else say(G.turn===1?S("Åklagaren börjar lägga fram bevisning.","The prosecution begins presenting evidence."):S("Nästa runda. Mer tid i rätten.","Next round. More time in court."));
