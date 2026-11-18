@@ -46,6 +46,8 @@ function newGame(cs,mode){
  ["P","D"].forEach(sd=>{const h=g.hand[sd],d=g.deck[sd];
   for(let i=h.length-1;i>=0;i--)if(isReact(h[i])){const j=d.findIndex(c=>!isReact(c));const t=h[i];h[i]=d[j];d[j]=t}
   [1,2].forEach(cost=>{if(!h.some(c=>c.cost===cost)){const j=d.findIndex(c=>c.cost===cost&&!isReact(c));if(j>=0){const k=h.findIndex(c=>c.cost>=3)>=0?h.findIndex(c=>c.cost>=3):h.length-1;const t=h[k];h[k]=d[j];d[j]=t}}});
+  /* guarantee a 1-minute card so round 1 is always playable */
+  if(!h.some(c=>c.cost===1&&!isReact(c))){const cand=h.filter(c=>!isReact(c)&&c.kw!=="vand").sort((a,b)=>a.cost-b.cost||a.pow-b.pow)[0];if(cand){cand.cost=1;cand.pow=Math.min(cand.pow,3)}}
   /* one objection guaranteed in hand; the flip card arrives in round 2 or 3 */
   h.push(mkGen(SPECIAL[0],sd));d.splice(RK()<.5?0:1,0,mkGen(FLIP,sd));
   const o=d.findIndex(c=>c.kw==="ovr");if(o>=0)d.splice(2+(RK()*3|0),0,d.splice(o,1)[0]);
