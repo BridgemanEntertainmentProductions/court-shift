@@ -90,6 +90,10 @@ body{background:#120a06;display:flex;justify-content:center}
 .card .nm{font-weight:800;font-size:11px;line-height:1.1;text-align:center;padding:3px 3px 1px}
 .card .kw{font-size:9.5px;font-weight:600;line-height:1.15;text-align:center;padding:0 4px;flex:1;overflow:hidden}
 .card .ty{font-size:8.5px;font-weight:800;text-transform:uppercase;text-align:center;padding:2px;background:var(--ink);color:#fff;letter-spacing:.3px}
+#rotate{display:none;position:fixed;inset:0;z-index:9999;background:#1c0f08;color:#fff;flex-direction:column;align-items:center;justify-content:center;gap:14px;text-align:center;padding:20px;font-family:var(--display);font-size:24px;letter-spacing:1px}
+#rotate .ph{width:54px;height:90px;border:5px solid var(--gold);border-radius:12px;animation:rot 1.6s ease-in-out infinite}
+@keyframes rot{0%,30%{transform:rotate(-90deg)}60%,100%{transform:rotate(0)}}
+@media (orientation:landscape) and (max-height:520px) and (pointer:coarse){#rotate{display:flex}}
 .drag{position:fixed;z-index:80;pointer-events:none;transform:translate(-50%,-60%) rotate(-4deg) scale(.9);opacity:.92}
 /* overlays */
 .ov{position:absolute;inset:0;z-index:30;background:rgba(8,6,4,.84);display:none;place-items:center;padding:14px}
@@ -343,6 +347,7 @@ body{background:#120a06;display:flex;justify-content:center}
  <div class="handbar"><span class="clock" id="clock"></span><span class="hint" id="hint"></span><button class="btn red" id="goBtn">KLAR</button></div>
  <div class="hand" id="hand"></div>
  <div id="menu"></div>
+ <div id="rotate"><div class="ph"></div><div id="rotT">Vrid telefonen till stående läge</div></div>
  <div class="ticker" id="ticker"></div>
  <div class="toast" id="toast"></div>
  <div class="stamp" id="stamp"></div>
@@ -733,6 +738,12 @@ const rankOf=xp=>RANKS.filter(r=>xp>=r[0]).pop();
 let C=null,G=null,UI={sel:-1,planner:null,queue:[],busy:true,tut:false,seen:{}};
 function sfxp(k){try{sfx[k]&&sfx[k](5)}catch(e){}}
 function gavel(){try{tone(150,0,.12,"square",.16,60);tone(120,.14,.12,"square",.14,50);hiss(.08,.15,900)}catch(e){}}
+/* fit the phone layout to short screens by zooming the whole app */
+function fitApp(){const a=$("app");if(!a)return;const w=innerWidth,h=innerHeight;let z=1;
+ if(w<700&&h>=w){z=Math.min(1,h/730,w/372);z=Math.max(.62,Math.round(z*100)/100)}
+ window.APPZ=z;a.style.zoom=z===1?"":z;a.style.height=z===1?"":(h/z)+"px";a.style.width=z===1?"":(w/z)+"px";a.style.maxWidth=z===1?"":"none";
+ const rt=document.getElementById("rotT");if(rt)rt.textContent=typeof S==="function"?S("Vrid telefonen till stående läge","Turn your phone to portrait"):"";}
+addEventListener("resize",fitApp);addEventListener("orientationchange",()=>setTimeout(fitApp,200));setTimeout(fitApp,0);
 function dingdong(){try{tone(660,0,.9,"sine",.5);tone(1320,0,.5,"triangle",.12);tone(523,.42,1.2,"sine",.5);tone(1046,.42,.7,"triangle",.12)}catch(e){}}
 function say(t){$("say").innerHTML=t}
 function stamp(t,s){const e=$("stamp");e.textContent=t;e.className="stamp on "+(s||"");gavel();try{navigator.vibrate&&navigator.vibrate(30)}catch(x){}setTimeout(()=>e.className="stamp "+(s||""),900)}
@@ -1017,7 +1028,7 @@ function judgment(){if(G.over)return;G.over=true;const v=verdictOf(G),guilty=v.g
 window.readDom=()=>modal(`${window.__dom}${note(verdictOf(G).guilty?"rek":"doubt")}<button class="btn" onclick="modal(window.__short)">${S("TILLBAKA","BACK")}</button>`);
 /* coach */
 function coach(text,sel,cb,forced){const c=$("coach");c.classList.toggle("forced",!!forced);$("coachImg").src=ARTHUR;$("coachT").textContent=text;const el=sel&&document.querySelector(sel),ar=$("app").getBoundingClientRect(),r=el?el.getBoundingClientRect():null;
- const below=r&&(r.top-ar.top)<ar.height*.35;c.style.top=below?(r.bottom-ar.top+8)+"px":"auto";c.style.bottom=below?"auto":(r?Math.max(8,ar.bottom-r.top+10):190)+"px";c.classList.add("show");c._cb=cb;$("coachOk").onclick=()=>hideCoach()}
+ const below=r&&(r.top-ar.top)<ar.height*.35;const Z=window.APPZ||1;c.style.top=below?((r.bottom-ar.top+8)/Z)+"px":"auto";c.style.bottom=below?"auto":(r?Math.max(8,(ar.bottom-r.top+10)/Z):190)+"px";c.classList.add("show");c._cb=cb;$("coachOk").onclick=()=>hideCoach()}
 function hideCoach(silent){const c=$("coach");if(!c.classList.contains("show"))return;c.classList.remove("show");const cb=c._cb;c._cb=null;if(cb&&!silent)cb()}
 function tutor(){if(!UI.tut)return;const h=G.hand[myRole()];
  if(G.turn===1&&!UI.seen.t1){UI.seen.t1=1;UI.ts="card";const gi=h.findIndex(c=>c.cost===1&&!isReact(c));if(gi>0)h.unshift(h.splice(gi,1)[0]);UI.glow=gi>=0?0:-1;render();
